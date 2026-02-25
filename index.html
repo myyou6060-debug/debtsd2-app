@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -5,15 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#4361ee">
-    <title>مدير الديون - المطور</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <title>مدير الديون الاحترافي</title>
+    
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIm1hbmFnZXJfZGVidHMiLAogICJzaG9ydF9uYW1lIjogImRlYnRzIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiM0MzYxZWUiLAogICJ0aGVtZV9jb2xvciI6ICIjNDM2MWVlIgp9">
+
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --primary-color: #4361ee;
-            --success-color: #4caf50;
-            --danger-color: #f44336;
-            --warning-color: #ff9800; /* لون الدين - برتقالي/أصفر */
+            --success-color: #2e7d32;
+            --danger-color: #800000;
             --bg-color: #f1f3f9;
             --card-bg: #ffffff;
         }
@@ -22,211 +28,279 @@
             font-family: 'Cairo', sans-serif;
             background-color: var(--bg-color);
             margin: 0; padding: 0;
-            display: flex; flex-direction: column;
+            font-size: 15px;
+            font-weight: 700;
             height: 100vh; overflow: hidden;
+            display: flex; flex-direction: column;
+            user-select: none;
         }
 
         .app-header {
             background: linear-gradient(135deg, var(--primary-color), #3f37c9);
-            color: white; padding: 15px; text-align: center;
+            color: white; padding: 15px;
             border-radius: 0 0 20px 20px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
+        .header-titles { text-align: center; }
+        .app-header h3 { margin: 0; font-size: 18px; font-weight: 800; }
+        .app-header h4 { margin: 0; font-size: 14px; color: #ffeb3b; }
 
-        .container {
-            flex: 1; overflow-y: auto;
-            padding: 15px; padding-bottom: 90px;
+        .menu-container { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); }
+        .menu-dots { font-size: 26px; cursor: pointer; padding: 5px 10px; }
+        .dropdown-menu {
+            display: none; position: absolute; left: 0; top: 40px;
+            background: white; color: #333; border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2); min-width: 160px; z-index: 1000;
         }
+        .dropdown-menu div { padding: 14px 18px; font-size: 14px; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+        .dropdown-menu div:last-child { border: none; }
+
+        .container { flex: 1; overflow-y: auto; padding: 12px; padding-bottom: 90px; }
 
         .card {
             background: var(--card-bg);
-            border-radius: 18px; padding: 15px;
+            border-radius: 15px; padding: 15px;
             margin-bottom: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
         }
 
-        input, select {
-            width: 100%; padding: 12px; margin: 8px 0;
-            border: 1px solid #e0e0e0; border-radius: 12px;
-            font-size: 16px; font-family: 'Cairo';
+        /* حاوية الجدول تدعم السجلات الكثيرة جداً */
+        .history-container {
+            max-height: 350px;
+            overflow-y: auto;
+            border-radius: 10px;
+            background: #fafafa;
+            border: 1px solid #eee;
         }
+
+        .summary-total { font-size: 28px; font-weight: 900; color: var(--primary-color); }
+
+        input {
+            width: 100%; padding: 12px; margin: 8px 0;
+            border: 2px solid #e2e8f0; border-radius: 10px;
+            font-size: 16px; font-family: 'Cairo'; font-weight: 700;
+            box-sizing: border-box; outline: none; transition: 0.3s;
+        }
+        input:focus { border-color: var(--primary-color); }
 
         .btn {
-            border: none; padding: 12px; border-radius: 12px;
-            font-weight: 700; width: 100%; font-family: 'Cairo';
-            cursor: pointer; transition: 0.2s;
+            border: none; padding: 12px; border-radius: 10px;
+            font-weight: 800; width: 100%; font-family: 'Cairo';
+            font-size: 16px; cursor: pointer; transition: 0.2s;
         }
-
+        .btn:active { transform: scale(0.98); }
         .btn-primary { background: var(--primary-color); color: white; }
-        .btn-success { background: var(--success-color); color: white; }
-        .btn-danger { background: #fee2e2; color: var(--danger-color); }
+        .btn-pay { background: var(--danger-color); color: white; }
+        .btn-add { background: #f59e0b; color: white; }
 
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 10px 0; }
-        .stat-card { background: #f8fafc; padding: 10px; border-radius: 12px; text-align: center; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 10px 0; }
+        .stat-card { background: #fff; padding: 10px; border-radius: 10px; text-align: center; border: 2px solid #f1f5f9; }
+        .stat-card small { font-size: 11px; color: #64748b; }
+        .stat-card b { display: block; font-size: 14px; }
 
-        .history-table {
-            width: 100%; border-collapse: collapse;
-            margin-top: 10px; font-size: 14px;
+        .person-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 5px; border-bottom: 1px solid #f1f5f9;
         }
+        .person-info { flex: 1; cursor: pointer; display: flex; justify-content: space-between; padding-left: 15px; }
+        .person-name { font-weight: 800; font-size: 16px; color: #1e293b; }
+        .person-debt { color: var(--danger-color); font-weight: 900; font-size: 17px; }
 
-        .history-table th { color: #64748b; padding: 10px 5px; border-bottom: 2px solid #edf2f7; }
-        .history-table td { padding: 12px 5px; border-bottom: 1px solid #f1f5f9; text-align: center; }
+        .del-account-btn { background: #fff1f2; color: #e11d48; border: 1px solid #fecdd3; padding: 6px 12px; border-radius: 8px; font-size: 12px; }
 
-        /* تلوين الصفوف */
-        .row-add { background-color: #fffde7; } /* أصفر خفيف للدين */
-        .row-pay { background-color: #ffebee; } /* أحمر خفيف للدفع */
+        .history-table { width: 100%; border-collapse: collapse; }
+        .history-table thead { position: sticky; top: 0; background: #eee; z-index: 10; }
+        .history-table th { padding: 10px; font-size: 13px; color: #475569; }
+        .history-table td { padding: 12px 8px; border-bottom: 1px solid #f1f5f9; text-align: center; font-size: 14px; }
 
-        .action-btn {
-            border: none; padding: 5px 8px; border-radius: 6px;
-            font-weight: bold; font-size: 11px; cursor: pointer; margin: 2px;
-        }
-        .edit-btn { background: #e3f2fd; color: #1976d2; }
-        .del-btn { background: #ffebee; color: #d32f2f; }
+        .row-add { background-color: #fffbeb; } 
+        .row-pay { background-color: #f0fdf4; }
 
         .bottom-nav {
             position: fixed; bottom: 0; width: 100%;
-            background: white; display: flex; padding: 10px 0;
-            border-top: 1px solid #eee;
+            background: white; display: flex; padding: 12px 0;
+            border-top: 1px solid #e2e8f0; z-index: 100;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
         }
-
-        .nav-item { flex: 1; text-align: center; color: #a0aec0; font-size: 12px; }
+        .nav-item { flex: 1; text-align: center; color: #94a3b8; font-size: 14px; font-weight: 800; cursor: pointer; }
         .nav-item.active { color: var(--primary-color); }
-
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .type-label { font-size: 10px; display: block; font-weight: bold; }
-        .color-add { color: var(--warning-color); }
-        .color-pay { color: var(--danger-color); }
     </style>
 </head>
-<body>
+<body onclick="closeMenu()">
 
-<div class="app-header"><h3>💰 تطبيق ديوني المطور</h3></div>
+<div class="app-header">
+    <div class="menu-container" onclick="event.stopPropagation()">
+        <div class="menu-dots" onclick="toggleMenu()">⋮</div>
+        <div class="dropdown-menu" id="dropdownMenu">
+            <div onclick="exportData()">📤 تصدير نسخة احتياطية</div>
+            <div onclick="document.getElementById('fileInput').click()">📥 استيراد بيانات</div>
+        </div>
+    </div>
+    <div class="header-titles">
+        <h3>مدير الديون</h3>
+        <h4 id="subTitle">القائمة الرئيسية</h4>
+    </div>
+    <input type="file" id="fileInput" style="display:none" accept=".txt" onchange="importData(event)">
+</div>
 
 <div class="container">
-    <div id="tab1" class="tab-content active">
-        <div class="card">
-            <h4>👤 إضافة حساب جديد</h4>
-            <input type="text" id="newName" placeholder="اسم الشخص">
-            <input type="number" id="newAmount" placeholder="المبلغ الافتتاحي (دين)">
-            <button class="btn btn-primary" onclick="addPerson()">إضافة</button>
+    <div id="tab1">
+        <div class="card" style="border-right: 6px solid var(--primary-color);">
+            <small>إجمالي الديون المطلوبة منك:</small>
+            <div class="summary-total" id="grandTotal">0</div>
         </div>
+
         <div class="card">
-            <h4>📊 القائمة العامة</h4>
-            <table style="width: 100%; text-align: center;">
-                <thead style="color: #64748b;"><tr><th>الاسم</th><th>المتبقي</th></tr></thead>
-                <tbody id="remainingBody"></tbody>
-            </table>
+            <label>إضافة شخص جديد:</label>
+            <input type="text" id="newName" placeholder="اسم الشخص">
+            <input type="number" id="newAmount" placeholder="المبلغ الأولي (إن وجد)">
+            <button class="btn btn-primary" onclick="addPerson()">إضافة للحسابات</button>
+        </div>
+
+        <div class="card" style="padding: 5px;">
+            <div id="personsList"></div>
         </div>
     </div>
 
-    <div id="tab2" class="tab-content">
+    <div id="tab2" style="display:none;">
         <div class="card">
-            <label>اختر الحساب:</label>
-            <select id="personSelect" onchange="loadData()"></select>
             <div class="stat-grid">
-                <div class="stat-card"><span>إجمالي</span><br><b id="total">0</b></div>
-                <div class="stat-card"><span>مدفوع</span><br><b id="paid" style="color:var(--success-color)">0</b></div>
-                <div class="stat-card"><span>باقي</span><br><b id="remain" style="color:var(--danger-color)">0</b></div>
+                <div class="stat-card"><small>الإجمالي</small><b id="total">0</b></div>
+                <div class="stat-card"><small>المدفوع</small><b id="paid" style="color:var(--success-color)">0</b></div>
+                <div class="stat-card"><small>المتبقي</small><b id="remain" style="color:var(--danger-color)">0</b></div>
             </div>
-            <input type="number" id="amountInput" placeholder="أدخل المبلغ">
+            <hr style="border:0; border-top:1px solid #f1f5f9; margin:15px 0;">
             <div style="display: flex; gap: 10px;">
-                <button class="btn btn-primary" style="background: var(--warning-color);" onclick="processAction('add')">➕ دين</button>
-                <button class="btn btn-success" style="background: var(--danger-color);" onclick="processAction('pay')">💵 دفع</button>
+                <input type="date" id="opDate" style="flex: 1.2;">
+                <input type="number" id="amountInput" placeholder="المبلغ" style="flex: 1;">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-add" onclick="processAction('add')">➕ إضافة دين</button>
+                <button class="btn btn-pay" onclick="processAction('pay')">💵 استلام سداد</button>
             </div>
         </div>
 
-        <div class="card">
-            <h4>📜 السجل الملون</h4>
-            <table class="history-table">
-                <thead>
-                    <tr><th>التاريخ</th><th>المبلغ</th><th>إجراء</th></tr>
-                </thead>
-                <tbody id="historyList"></tbody>
-            </table>
-            <button class="btn btn-danger" style="margin-top:20px;" onclick="deletePersonFull()">🗑️ حذف الحساب</button>
+        <div class="card" style="padding: 0;">
+            <div class="history-container">
+                <table class="history-table">
+                    <thead><tr><th>التاريخ</th><th>المبلغ</th><th>الحالة</th><th>-</th></tr></thead>
+                    <tbody id="historyList"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
 <div class="bottom-nav">
-    <div class="nav-item active" onclick="openTab(1, this)">🏠 الرئيسية</div>
-    <div class="nav-item" onclick="openTab(2, this)">💸 العمليات</div>
+    <div class="nav-item active" id="navHome" onclick="openTab(1, this)">🏠 الرئيسية</div>
+    <div class="nav-item" id="navOps" onclick="openTab(2, this)">💸 العمليات</div>
 </div>
 
 <script>
-    let data = JSON.parse(localStorage.getItem("debts_v5_pro")) || {};
+    // تسجيل الخدمة للعمل بدون إنترنت
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdmZXRjaCcsIGU9PntlLnJlc3BvbmRXaXRoKGZldGNoKGUucmVxdWVzdCkuY2F0Y2goKCk9PmNhY2hlcy5tYXRjaChlLnJlcXVlc3QpKSl9KTs=');
+        });
+    }
+
+    const DB_NAME = "DEBTS_FINAL_OFFLINE_V1";
+    let data = JSON.parse(localStorage.getItem(DB_NAME)) || {};
+    let activePerson = "";
+
+    function toggleMenu() {
+        const menu = document.getElementById('dropdownMenu');
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function closeMenu() { document.getElementById('dropdownMenu').style.display = 'none'; }
 
     function save() {
-        localStorage.setItem("debts_v5_pro", JSON.stringify(data));
+        localStorage.setItem(DB_NAME, JSON.stringify(data));
         renderHome();
     }
 
     function renderHome() {
-        const tbody = document.getElementById('remainingBody');
-        tbody.innerHTML = '';
+        const listDiv = document.getElementById('personsList');
+        const grandTotalDiv = document.getElementById('grandTotal');
+        listDiv.innerHTML = '';
+        let grandTotal = 0;
+
         for (let name in data) {
             let remain = data[name].total - data[name].paid;
-            tbody.innerHTML += `<tr><td>${name}</td><td><b>${remain}</b></td></tr>`;
+            grandTotal += remain;
+            listDiv.innerHTML += `
+                <div class="person-row">
+                    <div class="person-info" onclick="goToPerson('${name}')">
+                        <span class="person-name">${name}</span>
+                        <span class="person-debt">${remain.toLocaleString()}</span>
+                    </div>
+                    <button class="del-account-btn" onclick="deletePersonFull('${name}')">حذف</button>
+                </div>`;
         }
-        updateSelect();
-    }
-
-    function updateSelect() {
-        const select = document.getElementById('personSelect');
-        const current = select.value;
-        select.innerHTML = '';
-        for (let name in data) {
-            select.innerHTML += `<option value="${name}">${name}</option>`;
-        }
-        if (current && data[current]) select.value = current;
+        grandTotalDiv.textContent = grandTotal.toLocaleString();
     }
 
     function addPerson() {
         const name = document.getElementById('newName').value.trim();
         const amt = Number(document.getElementById('newAmount').value) || 0;
         if (!name || data[name]) return alert("الاسم موجود أو غير صالح");
+        
         data[name] = { total: amt, paid: 0, history: [] };
-        if (amt > 0) data[name].history.push({ id: Date.now(), date: tdy(), type: 'إضافة', amount: amt });
+        if (amt > 0) {
+            data[name].history.push({ id: Date.now(), date: formatDate(new Date()), type: 'إضافة', amount: amt });
+        }
         document.getElementById('newName').value = '';
         document.getElementById('newAmount').value = '';
         save();
     }
 
+    function goToPerson(name) {
+        activePerson = name;
+        openTab(2, document.getElementById('navOps'));
+        loadData();
+    }
+
     function loadData() {
-        const name = document.getElementById('personSelect').value;
-        if (!name) return;
-        const p = data[name];
-        document.getElementById('total').textContent = p.total;
-        document.getElementById('paid').textContent = p.paid;
-        document.getElementById('remain').textContent = p.total - p.paid;
+        if (!activePerson) return;
+        document.getElementById('subTitle').textContent = "حساب " + activePerson;
+        const p = data[activePerson];
+        document.getElementById('total').textContent = p.total.toLocaleString();
+        document.getElementById('paid').textContent = p.paid.toLocaleString();
+        document.getElementById('remain').textContent = (p.total - p.paid).toLocaleString();
 
         const hList = document.getElementById('historyList');
-        hList.innerHTML = p.history.slice().reverse().map(h => {
-            const isAdd = h.type === 'إضافة';
-            return `
-            <tr class="${isAdd ? 'row-add' : 'row-pay'}">
-                <td>${h.date}<span class="type-label ${isAdd ? 'color-add' : 'color-pay'}">${h.type}</span></td>
-                <td><b>${h.amount}</b></td>
-                <td>
-                    <button class="action-btn edit-btn" onclick="editItem('${name}', ${h.id})">تعديل</button>
-                    <button class="action-btn del-btn" onclick="deleteHistoryItem('${name}', ${h.id})">حذف</button>
-                </td>
-            </tr>`;
-        }).join('');
+        hList.innerHTML = p.history.slice().reverse().map(h => `
+            <tr class="${h.type === 'إضافة' ? 'row-add' : 'row-pay'}">
+                <td>${h.date}</td>
+                <td style="color:${h.type === 'دفع' ? 'green' : 'brown'}"><b>${h.amount.toLocaleString()}</b></td>
+                <td>${h.type}</td>
+                <td><button onclick="deleteItem('${activePerson}', ${h.id})" style="border:none; background:none; color:red;">❌</button></td>
+            </tr>`).join('');
     }
 
     function processAction(type) {
-        const name = document.getElementById('personSelect').value;
+        if (!activePerson) return;
         const val = Number(document.getElementById('amountInput').value);
-        if (!val || !name) return;
-        if (type === 'add') data[name].total += val;
-        else data[name].paid += val;
-        data[name].history.push({ id: Date.now(), date: tdy(), type: type === 'add' ? 'إضافة' : 'دفع', amount: val });
+        if (!val) return;
+        
+        const dateInput = document.getElementById('opDate').value;
+        const d = dateInput ? dateInput.split('-').reverse().slice(0,2).join('/') : formatDate(new Date());
+        
+        if (type === 'add') data[activePerson].total += val;
+        else data[activePerson].paid += val;
+
+        data[activePerson].history.push({ id: Date.now(), date: d, type: type === 'add' ? 'إضافة' : 'دفع', amount: val });
         document.getElementById('amountInput').value = '';
         save(); loadData();
     }
 
-    function deleteHistoryItem(personName, itemId) {
+    function deleteItem(personName, itemId) {
         if (!confirm("حذف العملية؟")) return;
         const person = data[personName];
         const idx = person.history.findIndex(h => h.id === itemId);
@@ -237,40 +311,51 @@
         save(); loadData();
     }
 
-    function editItem(personName, itemId) {
-        const person = data[personName];
-        const idx = person.history.findIndex(h => h.id === itemId);
-        const item = person.history[idx];
-        const newAmt = prompt(`تعديل مبلغ ${item.type}:`, item.amount);
-        
-        if (newAmt !== null && !isNaN(newAmt) && newAmt !== "") {
-            const diff = Number(newAmt) - item.amount;
-            if (item.type === 'إضافة') person.total += diff;
-            else person.paid += diff;
-            item.amount = Number(newAmt);
-            save(); loadData();
-        }
-    }
-
-    function deletePersonFull() {
-        const name = document.getElementById('personSelect').value;
-        if (confirm(`حذف ${name} نهائياً؟`)) {
+    function deletePersonFull(name) {
+        if (confirm(`حذف حساب ${name} نهائياً؟`)) {
             delete data[name];
-            save(); renderHome();
-            openTab(1, document.querySelector('.nav-item'));
+            save();
+            renderHome();
         }
     }
 
     function openTab(num, el) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.getElementById('tab1').style.display = num === 1 ? 'block' : 'none';
+        document.getElementById('tab2').style.display = num === 2 ? 'block' : 'none';
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById('tab' + num).classList.add('active');
         el.classList.add('active');
-        if (num === 2) loadData();
+        if (num === 1) {
+            document.getElementById('subTitle').textContent = "القائمة الرئيسية";
+            activePerson = "";
+        }
     }
 
-    function tdy() { return new Date().toLocaleDateString('ar-DZ', { month: 'numeric', day: 'numeric' }); }
-    renderHome();
+    function formatDate(date) { return date.getDate() + "/" + (date.getMonth() + 1); }
+
+    function exportData() {
+        const text = JSON.stringify(data);
+        const blob = new Blob([text], { type: 'text/plain' });
+        const anchor = document.createElement('a');
+        anchor.download = "نسخة_الديون.txt";
+        anchor.href = window.URL.createObjectURL(blob);
+        anchor.click();
+    }
+
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                data = JSON.parse(e.target.result);
+                save(); renderHome();
+                alert("تم استيراد البيانات بنجاح");
+            } catch { alert("خطأ في الملف"); }
+        };
+        reader.readAsText(file);
+    }
+
+    window.onload = () => { renderHome(); document.getElementById('opDate').value = new Date().toISOString().split('T')[0]; };
 </script>
 </body>
 </html>
