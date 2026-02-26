@@ -13,7 +13,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#4c46e9">
     
-    <!-- أيقونات التطبيق بأحجام مختلفة -->
+    <!-- أيقونات التطبيق بأحجام مختلفة (أيقونة احترافية) -->
     <link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234c46e9'/%3E%3Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%3E💰%3C/text%3E%3C/svg%3E">
     <link rel="icon" type="image/png" sizes="512x512" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234c46e9'/%3E%3Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%3E💰%3C/text%3E%3C/svg%3E">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234c46e9'/%3E%3Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%3E💰%3C/text%3E%3C/svg%3E">
@@ -344,6 +344,38 @@
             font-size: 10px;
             margin-right: 5px;
             vertical-align: middle;
+            transition: opacity 0.2s;
+        }
+
+        /* تنسيق رسالة الحالة في الصفحة الرئيسية */
+        .status-message {
+            text-align: center;
+            padding: 20px;
+            border-radius: 30px;
+            font-size: 28px;
+            font-weight: 900;
+            margin-top: 20px;
+            box-shadow: var(--shadow);
+        }
+        .status-positive {
+            background-color: #d4edda;
+            color: #155724;
+            border: 3px solid #28a745;
+        }
+        .status-negative {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 3px solid #dc3545;
+        }
+        .status-neutral {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 3px solid #ffc107;
+        }
+        .status-emoji {
+            font-size: 60px;
+            display: block;
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -412,13 +444,17 @@
 </div>
 
 <div class="container">
-    <!-- ================ الصفحة الرئيسية (الرسم البياني فقط) ================ -->
+    <!-- ================ الصفحة الرئيسية (الرسم البياني + حالة الصافي) ================ -->
     <div id="tabHomepage" class="page active">
         <div class="home-header">
             <h2 style="font-size: 22px; font-weight: 900; color: var(--primary-blue); margin:0;">📊 الوضع المالي الحالي</h2>
         </div>
         <div class="chart-container">
             <canvas id="financialChart"></canvas>
+        </div>
+        <!-- رسالة الحالة بناءً على المقارنة الجديدة -->
+        <div id="statusMessage" class="status-message">
+            <!-- يتم تعبئتها عبر JavaScript -->
         </div>
     </div>
 
@@ -598,7 +634,7 @@
 
 <script>
     (function() {
-        const STORAGE_KEY = "MY_STABLE_FINANCE_v16";
+        const STORAGE_KEY = "MY_STABLE_FINANCE_v17";
         
         // استرجاع البيانات أو إنشاء هيكل جديد (يضمن عدم فقدان المعلومات)
         let db = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { 
@@ -625,7 +661,7 @@
         // حفظ مع مؤشر مرئي (نبض بسيط)
         function saveToStorage() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-            // وميض سريع لمؤشر الحفظ (اختياري)
+            // وميض سريع لمؤشر الحفظ
             const indicators = document.querySelectorAll('.auto-save-indicator');
             indicators.forEach(el => {
                 el.style.opacity = '0.5';
@@ -688,6 +724,39 @@
             }
         };
 
+        // دالة لحساب إجمالي السلف والمشتريات (الالتزامات)
+        function getTotalLiabilities() {
+            let totalBorrows = db.borrows.reduce((acc, b) => acc + b.amount, 0);
+            let totalStoreDebt = 0;
+            for (let n in db.stores) {
+                totalStoreDebt += (db.stores[n].total - db.stores[n].paid);
+            }
+            return totalBorrows + totalStoreDebt;
+        }
+
+        // دالة لحساب إجمالي الادخار
+        function getTotalSavings() {
+            return db.savings.reduce((acc, s) => acc + s.amount, 0);
+        }
+
+        // تحديث رسالة الحالة في الصفحة الرئيسية حسب المنطق الجديد
+        function updateStatusMessage() {
+            const savings = getTotalSavings();
+            const liabilities = getTotalLiabilities();
+            const statusDiv = document.getElementById('statusMessage');
+            let html = '';
+            
+            if (savings > liabilities) {
+                html = '<div class="status-message status-positive"><span class="status-emoji">😊</span>الحساب جيد (الادخار أكبر)</div>';
+            } else if (savings < liabilities) {
+                html = '<div class="status-message status-negative"><span class="status-emoji">😱</span>الحساب سيء - يرجى الحذر (الديون أكبر)</div>';
+            } else {
+                html = '<div class="status-message status-neutral"><span class="status-emoji">😐</span>الحساب متوازن (الادخار = الديون)</div>';
+            }
+            
+            statusDiv.innerHTML = html;
+        }
+
         // ================ تحديث الرسم البياني ================
         function updateHomepageChart() {
             let totalBorrows = db.borrows.reduce((acc, b) => acc + b.amount, 0);
@@ -726,6 +795,9 @@
                     }
                 }
             });
+
+            // تحديث رسالة الحالة
+            updateStatusMessage();
         }
 
         // ================ إدارة المشتريات بالدين ================
@@ -1051,6 +1123,7 @@
         window.renderDebtDet = renderDebtDet;
         window.renderSavings = renderSavings;
         window.updateDebtStats = updateDebtStats;
+        window.updateStatusMessage = updateStatusMessage; // تصدير الدالة
     })();
 </script>
 </body>
