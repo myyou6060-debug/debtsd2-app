@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>منصة الاستقرار المالي والادخاري</title>
     
-    <!-- إعدادات PWA لتثبيت التطبيق على الهاتف -->
+    <!-- إعدادات PWA -->
     <meta name="application-name" content="المستقر المالي">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -13,17 +13,17 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#4c46e9">
     
-    <!-- أيقونات التطبيق بأحجام مختلفة (أيقونة احترافية) -->
+    <!-- أيقونات التطبيق -->
     <link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234c46e9'/%3E%3Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%3E💰%3C/text%3E%3C/svg%3E">
     <link rel="icon" type="image/png" sizes="512x512" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234c46e9'/%3E%3Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%3E💰%3C/text%3E%3C/svg%3E">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234c46e9'/%3E%3Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%3E💰%3C/text%3E%3C/svg%3E">
     
-    <!-- رابط البيان (manifest) للتطبيق -->
     <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22%D8%A7%D9%84%D9%85%D8%B3%D8%AA%D9%82%D8%B1%20%D8%A7%D9%84%D9%85%D8%A7%D9%84%D9%8A%22%2C%22short_name%22%3A%22%D9%85%D8%B3%D8%AA%D9%82%D8%B1%22%2C%22description%22%3A%22%D9%85%D9%86%D8%B5%D8%A9%20%D9%84%D8%A5%D8%AF%D8%A7%D8%B1%D8%A9%20%D8%A7%D9%84%D8%B3%D9%84%D9%81%20%D9%88%D8%A7%D9%84%D9%85%D8%B4%D8%AA%D8%B1%D9%8A%D8%A7%D8%AA%20%D8%A8%D8%A7%D9%84%D8%AF%D9%8A%D9%86%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%234c46e9%22%2C%22theme_color%22%3A%22%234c46e9%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data:image/svg+xml,%253Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%253E%253Ccircle cx='50' cy='50' r='45' fill='%25234c46e9'/%253E%253Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%253E💰%253C/text%253E%253C/svg%253E%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image/svg+xml%22%7D%2C%7B%22src%22%3A%22data:image/svg+xml,%253Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%253E%253Ccircle cx='50' cy='50' r='45' fill='%25234c46e9'/%253E%253Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%253E💰%253C/text%253E%253C/svg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image/svg+xml%22%7D%5D%7D">
     
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
+        /* جميع الأنماط كما هي دون تغيير */
         * {
             box-sizing: border-box;
             user-select: none;
@@ -53,8 +53,6 @@
             position: relative; 
             box-shadow: var(--shadow);
         }
-        
-        /* العنوان الثابت في الأعلى */
         .fixed-title {
             font-size: 20px;
             font-weight: 900;
@@ -66,8 +64,6 @@
             margin-bottom: 5px;
             text-align: center;
         }
-        
-        /* الصف الثاني: زر القائمة + العنوان المتحرك */
         .second-row {
             display: flex;
             align-items: center;
@@ -76,8 +72,6 @@
             position: relative;
             min-height: 40px;
         }
-        
-        /* زر القائمة */
         .menu-btn {
             font-size: 24px; 
             cursor: pointer;
@@ -92,8 +86,6 @@
             flex-shrink: 0;
         }
         .menu-btn:active { background: rgba(255,255,255,0.3); }
-        
-        /* العنوان المتحرك */
         .dynamic-title {
             font-size: 16px;
             font-weight: 700;
@@ -106,8 +98,6 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        
-        /* زر الرجوع */
         .back-btn {
             font-size: 14px; 
             cursor: pointer;
@@ -123,8 +113,6 @@
             backdrop-filter: blur(4px);
             margin-left: auto;
         }
-        
-        /* القائمة الجانبية */
         .sidebar {
             position: fixed; 
             right: -260px; 
@@ -139,8 +127,6 @@
             border-radius: 30px 0 0 30px;
         }
         .sidebar.open { right: 0; }
-        
-        /* عناصر القائمة الجانبية مع أيقونات */
         .sidebar-item {
             padding: 12px 15px; 
             margin-bottom: 8px; 
@@ -155,14 +141,11 @@
             transition: 0.2s;
         }
         .sidebar-item:hover { background: #ede9fe; color: var(--primary-blue); }
-        
-        /* أيقونات القائمة */
         .sidebar-icon {
             font-size: 24px;
             width: 30px;
             text-align: center;
         }
-        
         .sidebar-overlay {
             position: fixed; top:0; left:0; width:100%; height:100%;
             background: rgba(0,0,0,0.4); display:none; z-index: 999;
@@ -274,7 +257,6 @@
             font-size: 32px;
             font-weight: 900;
         }
-        /* تلوين الصفوف حسب وجود تفاصيل */
         tr.purchase-with-details {
             background-color: #e6f7e6 !important;
         }
@@ -297,7 +279,6 @@
             display: inline-block;
             margin-bottom: 8px;
         }
-        /* تنسيق الصفحة الرئيسية */
         .home-header {
             text-align: center;
             margin-bottom: 15px;
@@ -313,8 +294,6 @@
             max-height: 300px;
             width: 100% !important;
         }
-        
-        /* رسالة تثبيت التطبيق */
         .install-prompt {
             background: white;
             border-radius: 20px;
@@ -334,8 +313,6 @@
             font-weight: 700;
             cursor: pointer;
         }
-        
-        /* مؤشر حفظ تلقائي */
         .auto-save-indicator {
             display: inline-block;
             background: rgba(255,255,255,0.2);
@@ -346,8 +323,6 @@
             vertical-align: middle;
             transition: opacity 0.2s;
         }
-
-        /* تنسيق رسالة الحالة في الصفحة الرئيسية */
         .status-message {
             text-align: center;
             padding: 20px;
@@ -377,6 +352,12 @@
             display: block;
             margin-bottom: 10px;
         }
+        /* إضافة فاصل بسيط بين الأزرار */
+        .sidebar-divider {
+            height: 1px;
+            background: #e0e0e0;
+            margin: 15px 0;
+        }
     </style>
 </head>
 <body>
@@ -389,7 +370,7 @@
             <span class="auto-save-indicator">✓ حفظ تلقائي</span>
         </div>
         
-        <!-- عناصر القائمة مع أيقونات -->
+        <!-- عناصر القائمة الرئيسية -->
         <div class="sidebar-item" onclick="showPage('tabHomepage')">
             <span class="sidebar-icon">🏠</span>
             <span>الرئيسية</span>
@@ -411,9 +392,22 @@
             <span>المجاميع</span>
         </div>
         
+        <div class="sidebar-divider"></div>
+        
+        <!-- أزرار استيراد/تصدير -->
+        <div class="sidebar-item" onclick="exportData()">
+            <span class="sidebar-icon">📤</span>
+            <span>تصدير البيانات</span>
+        </div>
+        <div class="sidebar-item" onclick="document.getElementById('importFile').click()">
+            <span class="sidebar-icon">📥</span>
+            <span>استيراد بيانات</span>
+        </div>
+        <!-- عنصر input خفي لاختيار ملف -->
+        <input type="file" id="importFile" accept=".json,application/json" style="display: none;" onchange="importData(event)">
+        
         <div style="flex:1;"></div>
         
-        <!-- إشعار تثبيت التطبيق -->
         <div style="font-size:12px; color:#aaa; text-align:center; padding:10px;">
             <span style="font-size:10px;">أضف للتطبيقات للاستخدام السريع</span>
         </div>
@@ -421,13 +415,11 @@
 </div>
 
 <div class="app-header">
-    <!-- العنوان الثابت في الأعلى -->
     <div class="fixed-title">
         <span>💰</span> منصة الاستقرار المالي والادخاري
         <span class="auto-save-indicator">✓ حفظ تلقائي</span>
     </div>
     
-    <!-- الصف الثاني: زر القائمة + العنوان المتحرك + زر الرجوع -->
     <div class="second-row">
         <div class="menu-btn" onclick="toggleSidebar()">☰</div>
         <div id="dynamicTitle" class="dynamic-title">
@@ -437,14 +429,13 @@
     </div>
 </div>
 
-<!-- رسالة تثبيت التطبيق (تظهر في المتصفحات التي تدعم التثبيت) -->
 <div id="installMessage" style="display: none;" class="install-prompt">
     <span>📱 ثبت التطبيق على هاتفك للوصول السريع</span>
     <button id="installBtn" class="install-btn">تثبيت</button>
 </div>
 
 <div class="container">
-    <!-- ================ الصفحة الرئيسية (الرسم البياني + حالة الصافي) ================ -->
+    <!-- الصفحة الرئيسية -->
     <div id="tabHomepage" class="page active">
         <div class="home-header">
             <h2 style="font-size: 22px; font-weight: 900; color: var(--primary-blue); margin:0;">📊 الوضع المالي الحالي</h2>
@@ -452,13 +443,10 @@
         <div class="chart-container">
             <canvas id="financialChart"></canvas>
         </div>
-        <!-- رسالة الحالة بناءً على المقارنة الجديدة -->
-        <div id="statusMessage" class="status-message">
-            <!-- يتم تعبئتها عبر JavaScript -->
-        </div>
+        <div id="statusMessage" class="status-message"></div>
     </div>
 
-    <!-- السلف (علي) - أنا استلفت من ناس -->
+    <!-- السلف -->
     <div id="tabBorrow" class="page">
         <div class="card" style="background: linear-gradient(145deg, #f0f9ff, #fff);">
             <h3 style="margin:0 0 8px; display:flex; align-items:center; gap:6px; font-size:18px;">
@@ -489,7 +477,7 @@
         <div id="storesList"></div>
     </div>
 
-    <!-- صفحة عمليات المشتريات بالدين (لكل تاجر) -->
+    <!-- عمليات المشتريات -->
     <div id="tabDebtOps" class="page">
         <div class="card" style="padding: 14px; background:#fff7ed;">
             <div class="store-name-badge" id="currentStoreName"></div>
@@ -525,7 +513,7 @@
         </table>
     </div>
 
-    <!-- صفحة تفاصيل السلع للمشتريات بالدين -->
+    <!-- تفاصيل السلع -->
     <div id="tabDebtDet" class="page">
         <div class="card" style="background:#fff7ed;">
             <div class="store-name-badge" id="currentStoreNameDet"></div>
@@ -576,24 +564,21 @@
             </div>
             <hr>
             <div class="total-box">
-                <div class="total-label">💰 الصافي (الأكبر - المتوسط - الأصغر)</div>
+                <div class="total-label">💰 الصافي = الادخار - (السلف + المشتريات)</div>
                 <div id="totFinal" class="total-value">0 دج</div>
                 <p style="font-size:13px; color:#64748b; margin:5px 0 0;">
-                    (تم ترتيب المبالغ تنازلياً)
+                    (المبالغ معروضة ترتيباً تنازلياً)
                 </p>
             </div>
         </div>
     </div>
 </div>
 
-<!-- سكريبت تحويل التطبيق إلى PWA -->
+<!-- سكريبت PWA -->
 <script>
-    // تسجيل Service Worker
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').catch(() => {});
     }
-    
-    // إنشاء Service Worker بسيط
     const swScript = `
     self.addEventListener('install', e => {
         e.waitUntil(caches.open('finance-app').then(cache => 
@@ -603,24 +588,20 @@
     self.addEventListener('fetch', e => {
         e.respondWith(caches.match(e.request).then(response => response || fetch(e.request)));
     });`;
-    
     const blob = new Blob([swScript], { type: 'application/javascript' });
     const url = URL.createObjectURL(blob);
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register(url).catch(() => {});
     }
     
-    // كود تثبيت التطبيق على الهاتف
     let deferredPrompt;
     const installMessage = document.getElementById('installMessage');
     const installBtn = document.getElementById('installBtn');
-    
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
         installMessage.style.display = 'flex';
     });
-    
     installBtn.addEventListener('click', async () => {
         if (!deferredPrompt) return;
         deferredPrompt.prompt();
@@ -634,9 +615,8 @@
 
 <script>
     (function() {
-        const STORAGE_KEY = "MY_STABLE_FINANCE_v17";
+        const STORAGE_KEY = "MY_STABLE_FINANCE_v19";
         
-        // استرجاع البيانات أو إنشاء هيكل جديد (يضمن عدم فقدان المعلومات)
         let db = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { 
             stores: {},
             borrows: [],
@@ -646,9 +626,7 @@
         let curStore = "";
         let curStoreIdx = null;
         let editStoreIdx = null;
-        
         let pageStack = ['tabHomepage'];
-
         let financialChart = null;
 
         window.toggleSidebar = function() {
@@ -658,10 +636,8 @@
             overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
         };
 
-        // حفظ مع مؤشر مرئي (نبض بسيط)
         function saveToStorage() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-            // وميض سريع لمؤشر الحفظ
             const indicators = document.querySelectorAll('.auto-save-indicator');
             indicators.forEach(el => {
                 el.style.opacity = '0.5';
@@ -669,7 +645,6 @@
             });
         }
 
-        // تحديث العنوان المتحرك
         function updateDynamicTitle(icon, text) {
             document.getElementById('dynamicTitle').innerHTML = `<span>${icon}</span> ${text}`;
         }
@@ -678,8 +653,6 @@
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             if (push && pageStack[pageStack.length - 1] !== id) pageStack.push(id);
-            
-            // إظهار/إخفاء زر الرجوع
             document.getElementById('btnBack').style.display = (id === 'tabHomepage' || id === 'tabBorrow' || id === 'tabDebtHome') ? 'none' : 'block';
 
             if (id === 'tabHomepage') { 
@@ -724,7 +697,6 @@
             }
         };
 
-        // دالة لحساب إجمالي السلف والمشتريات (الالتزامات)
         function getTotalLiabilities() {
             let totalBorrows = db.borrows.reduce((acc, b) => acc + b.amount, 0);
             let totalStoreDebt = 0;
@@ -734,18 +706,15 @@
             return totalBorrows + totalStoreDebt;
         }
 
-        // دالة لحساب إجمالي الادخار
         function getTotalSavings() {
             return db.savings.reduce((acc, s) => acc + s.amount, 0);
         }
 
-        // تحديث رسالة الحالة في الصفحة الرئيسية حسب المنطق الجديد
         function updateStatusMessage() {
             const savings = getTotalSavings();
             const liabilities = getTotalLiabilities();
             const statusDiv = document.getElementById('statusMessage');
             let html = '';
-            
             if (savings > liabilities) {
                 html = '<div class="status-message status-positive"><span class="status-emoji">😊</span>الحساب جيد (الادخار أكبر)</div>';
             } else if (savings < liabilities) {
@@ -753,11 +722,9 @@
             } else {
                 html = '<div class="status-message status-neutral"><span class="status-emoji">😐</span>الحساب متوازن (الادخار = الديون)</div>';
             }
-            
             statusDiv.innerHTML = html;
         }
 
-        // ================ تحديث الرسم البياني ================
         function updateHomepageChart() {
             let totalBorrows = db.borrows.reduce((acc, b) => acc + b.amount, 0);
             let totalPurchases = 0;
@@ -796,7 +763,6 @@
                 }
             });
 
-            // تحديث رسالة الحالة
             updateStatusMessage();
         }
 
@@ -1058,9 +1024,8 @@
             renderSavings();
         };
 
-        // ================ المجاميع النهائية (بمنطق جديد) ================
+        // ================ المجاميع النهائية ================
         function calcFinal() {
-            // 1. حساب المبالغ
             let totalBorrows = db.borrows.reduce((acc, b) => acc + b.amount, 0);
             let totalStoreDebt = 0;
             for (let n in db.stores) {
@@ -1068,22 +1033,18 @@
             }
             let totalSavings = db.savings.reduce((acc, s) => acc + s.amount, 0);
 
-            // 2. تجهيز الأسماء والقيم للترتيب
+            // ترتيب العناصر تنازلياً للعرض
             let items = [
                 { name: '💸 السلف (علي)', value: totalBorrows, color: '#0284c7' },
                 { name: '🛒 المشتريات بالدين', value: totalStoreDebt, color: '#f97316' },
                 { name: '🏦 الادخار', value: totalSavings, color: '#10b981' }
             ];
-
-            // 3. الترتيب تنازلياً حسب القيمة
             items.sort((a, b) => b.value - a.value);
 
-            // 4. عرضها بالترتيب (الأكبر، المتوسط، الأصغر)
             const row1 = document.getElementById('totalRow1');
             const row2 = document.getElementById('totalRow2');
             const row3 = document.getElementById('totalRow3');
             
-            // تحديث النصوص والألوان
             row1.querySelector('span').innerHTML = items[0].name;
             row1.querySelector('b').innerText = items[0].value + ' دج';
             row1.querySelector('b').style.color = items[0].color;
@@ -1096,15 +1057,58 @@
             row3.querySelector('b').innerText = items[2].value + ' دج';
             row3.querySelector('b').style.color = items[2].color;
 
-            // 5. حساب الصافي = الأكبر - المتوسط - الأصغر
-            let net = items[0].value - items[1].value - items[2].value;
-
+            let net = totalSavings - (totalBorrows + totalStoreDebt);
             let finalEl = document.getElementById('totFinal');
             finalEl.innerText = net + ' دج';
             finalEl.style.color = net < 0 ? 'var(--danger-red)' : (net > 0 ? 'var(--success-green)' : '#64748b');
         }
 
-        // التهيئة - تحميل البيانات عند بدء التشغيل (لا تفقد أبداً)
+        // ================ استيراد / تصدير ================
+        window.exportData = function() {
+            const fileName = prompt("أدخل اسم الملف (سيتم حفظه بامتداد .json)", "Music");
+            if (!fileName) return; // إذا ضغط إلغاء
+            const dataStr = JSON.stringify(db, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName + '.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+
+        window.importData = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedDb = JSON.parse(e.target.result);
+                    // التحقق من صحة البنية (يمكن إضافة المزيد من التحقق)
+                    if (typeof importedDb !== 'object' || importedDb === null) throw new Error('ملف غير صالح');
+                    // دمج مع الاحتفاظ بالبيانات الحالية أو استبدال كامل؟ نختار الاستبدال الكامل
+                    if (confirm('سيتم استبدال جميع البيانات الحالية بالبيانات المستوردة. هل تريد المتابعة؟')) {
+                        db = importedDb;
+                        saveToStorage();
+                        // إعادة تحميل كل الصفحات
+                        renderBorrows();
+                        renderStoresHome();
+                        renderSavings();
+                        if (document.getElementById('tabHomepage').classList.contains('active')) updateHomepageChart();
+                        if (document.getElementById('tabTotals').classList.contains('active')) calcFinal();
+                        alert('تم استيراد البيانات بنجاح.');
+                    }
+                } catch (error) {
+                    alert('خطأ في قراءة الملف. تأكد من أنه ملف JSON صحيح.');
+                }
+            };
+            reader.readAsText(file);
+            // إعادة تعيين input file ليتمكن من اختيار نفس الملف مرة أخرى
+            event.target.value = '';
+        };
+
         window.onload = function() {
             let today = new Date().toISOString().split('T')[0];
             document.getElementById('debtODate').value = today;
@@ -1123,7 +1127,7 @@
         window.renderDebtDet = renderDebtDet;
         window.renderSavings = renderSavings;
         window.updateDebtStats = updateDebtStats;
-        window.updateStatusMessage = updateStatusMessage; // تصدير الدالة
+        window.updateStatusMessage = updateStatusMessage;
     })();
 </script>
 </body>
