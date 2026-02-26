@@ -4,6 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>منصة الاستقرار المالي والادخاري</title>
+    
+    <!-- إعدادات PWA لتثبيت التطبيق على الهاتف -->
+    <meta name="application-name" content="المستقر المالي">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="المستقر المالي">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#4c46e9">
+    
+    <!-- أيقونات التطبيق بأحجام مختلفة (رموز تعبيرية كأيقونات مؤقتة - يمكن استبدالها بصور حقيقية) -->
+    <link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234c46e9'/%3E%3Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%3E💰%3C/text%3E%3C/svg%3E">
+    <link rel="icon" type="image/png" sizes="512x512" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234c46e9'/%3E%3Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%3E💰%3C/text%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234c46e9'/%3E%3Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%3E💰%3C/text%3E%3C/svg%3E">
+    
+    <!-- رابط البيان (manifest) للتطبيق -->
+    <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22%D8%A7%D9%84%D9%85%D8%B3%D8%AA%D9%82%D8%B1%20%D8%A7%D9%84%D9%85%D8%A7%D9%84%D9%8A%22%2C%22short_name%22%3A%22%D9%85%D8%B3%D8%AA%D9%82%D8%B1%22%2C%22description%22%3A%22%D9%85%D9%86%D8%B5%D8%A9%20%D9%84%D8%A5%D8%AF%D8%A7%D8%B1%D8%A9%20%D8%A7%D9%84%D8%B3%D9%84%D9%81%20%D9%88%D8%A7%D9%84%D9%85%D8%B4%D8%AA%D8%B1%D9%8A%D8%A7%D8%AA%20%D8%A8%D8%A7%D9%84%D8%AF%D9%8A%D9%86%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%234c46e9%22%2C%22theme_color%22%3A%22%234c46e9%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data:image/svg+xml,%253Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%253E%253Ccircle cx='50' cy='50' r='45' fill='%25234c46e9'/%253E%253Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%253E💰%253C/text%253E%253C/svg%253E%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image/svg+xml%22%7D%2C%7B%22src%22%3A%22data:image/svg+xml,%253Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%253E%253Ccircle cx='50' cy='50' r='45' fill='%25234c46e9'/%253E%253Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%253E💰%253C/text%253E%253C/svg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image/svg+xml%22%7D%5D%7D">
+    
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
@@ -60,7 +77,7 @@
             min-height: 40px;
         }
         
-        /* زر القائمة - الآن في نفس صف العنوان الثاني */
+        /* زر القائمة */
         .menu-btn {
             font-size: 24px; 
             cursor: pointer;
@@ -90,7 +107,7 @@
             text-overflow: ellipsis;
         }
         
-        /* زر الرجوع - يظهر عند الحاجة */
+        /* زر الرجوع */
         .back-btn {
             font-size: 14px; 
             cursor: pointer;
@@ -107,6 +124,7 @@
             margin-left: auto;
         }
         
+        /* القائمة الجانبية */
         .sidebar {
             position: fixed; 
             right: -260px; 
@@ -121,6 +139,8 @@
             border-radius: 30px 0 0 30px;
         }
         .sidebar.open { right: 0; }
+        
+        /* عناصر القائمة الجانبية مع أيقونات */
         .sidebar-item {
             padding: 12px 15px; 
             margin-bottom: 8px; 
@@ -135,6 +155,14 @@
             transition: 0.2s;
         }
         .sidebar-item:hover { background: #ede9fe; color: var(--primary-blue); }
+        
+        /* أيقونات القائمة */
+        .sidebar-icon {
+            font-size: 24px;
+            width: 30px;
+            text-align: center;
+        }
+        
         .sidebar-overlay {
             position: fixed; top:0; left:0; width:100%; height:100%;
             background: rgba(0,0,0,0.4); display:none; z-index: 999;
@@ -285,6 +313,27 @@
             max-height: 300px;
             width: 100% !important;
         }
+        
+        /* رسالة تثبيت التطبيق */
+        .install-prompt {
+            background: white;
+            border-radius: 20px;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 2px solid var(--primary-blue);
+        }
+        .install-btn {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            padding: 8px 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -292,26 +341,39 @@
 <div class="sidebar" id="sidebar">
     <div style="display: flex; flex-direction: column; height: 100%;">
         <div style="text-align:center; margin: 10px 0 20px;">
-            <span style="font-size: 36px;">💰</span>
+            <span style="font-size: 48px;">💰</span>
             <h3 style="color: var(--primary-blue); margin:5px 0 0; font-size:18px;">المستقر المالي</h3>
         </div>
+        
+        <!-- عناصر القائمة مع أيقونات -->
         <div class="sidebar-item" onclick="showPage('tabHomepage')">
-            <span style="font-size:20px;">🏠</span> الرئيسية
+            <span class="sidebar-icon">🏠</span>
+            <span>الرئيسية</span>
         </div>
         <div class="sidebar-item" onclick="showPage('tabBorrow')">
-            <span style="font-size:20px;">💸</span> السلف (علي)
+            <span class="sidebar-icon">💸</span>
+            <span>السلف (علي)</span>
         </div>
         <div class="sidebar-item" onclick="showPage('tabDebtHome')">
-            <span style="font-size:20px;">🛒</span> المشتريات بالدين
+            <span class="sidebar-icon">🛒</span>
+            <span>المشتريات بالدين</span>
         </div>
         <div class="sidebar-item" onclick="showPage('tabSave')">
-            <span style="font-size:20px;">💰</span> الادخار
+            <span class="sidebar-icon">💰</span>
+            <span>الادخار</span>
         </div>
         <div class="sidebar-item" onclick="showPage('tabTotals')">
-            <span style="font-size:20px;">📊</span> المجاميع
+            <span class="sidebar-icon">📊</span>
+            <span>المجاميع</span>
         </div>
+        
         <div style="flex:1;"></div>
-        <div style="font-size:12px; color:#aaa; text-align:center; padding:10px;">✓ حفظ تلقائي</div>
+        
+        <!-- إشعار تثبيت التطبيق -->
+        <div style="font-size:12px; color:#aaa; text-align:center; padding:10px;">
+            ✓ حفظ تلقائي<br>
+            <span style="font-size:10px;">أضف للتطبيقات للاستخدام السريع</span>
+        </div>
     </div>
 </div>
 
@@ -329,6 +391,12 @@
         </div>
         <button id="btnBack" class="back-btn" onclick="goBack()">↩ رجوع</button>
     </div>
+</div>
+
+<!-- رسالة تثبيت التطبيق (تظهر في المتصفحات التي تدعم التثبيت) -->
+<div id="installMessage" style="display: none;" class="install-prompt">
+    <span>📱 ثبت التطبيق على هاتفك للوصول السريع</span>
+    <button id="installBtn" class="install-btn">تثبيت</button>
 </div>
 
 <div class="container">
@@ -470,12 +538,14 @@
     </div>
 </div>
 
-<!-- سكريبت تحويل التطبيق إلى PWA للعمل بدون إنترنت -->
+<!-- سكريبت تحويل التطبيق إلى PWA -->
 <script>
+    // تسجيل Service Worker
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(err => console.log('SW not registered'));
+        navigator.serviceWorker.register('sw.js').catch(() => {});
     }
     
+    // إنشاء Service Worker بسيط
     const swScript = `
     self.addEventListener('install', e => {
         e.waitUntil(caches.open('finance-app').then(cache => 
@@ -491,11 +561,32 @@
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register(url).catch(() => {});
     }
+    
+    // كود تثبيت التطبيق على الهاتف
+    let deferredPrompt;
+    const installMessage = document.getElementById('installMessage');
+    const installBtn = document.getElementById('installBtn');
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installMessage.style.display = 'flex';
+    });
+    
+    installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            installMessage.style.display = 'none';
+        }
+        deferredPrompt = null;
+    });
 </script>
 
 <script>
     (function() {
-        const STORAGE_KEY = "MY_STABLE_FINANCE_v13";
+        const STORAGE_KEY = "MY_STABLE_FINANCE_v14";
         
         let db = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { 
             stores: {},
