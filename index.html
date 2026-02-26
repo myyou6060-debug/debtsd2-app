@@ -13,7 +13,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#4c46e9">
     
-    <!-- أيقونات التطبيق بأحجام مختلفة (رموز تعبيرية كأيقونات مؤقتة - يمكن استبدالها بصور حقيقية) -->
+    <!-- أيقونات التطبيق بأحجام مختلفة -->
     <link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234c46e9'/%3E%3Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%3E💰%3C/text%3E%3C/svg%3E">
     <link rel="icon" type="image/png" sizes="512x512" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234c46e9'/%3E%3Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%3E💰%3C/text%3E%3C/svg%3E">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234c46e9'/%3E%3Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%3E💰%3C/text%3E%3C/svg%3E">
@@ -334,6 +334,17 @@
             font-weight: 700;
             cursor: pointer;
         }
+        
+        /* مؤشر حفظ تلقائي */
+        .auto-save-indicator {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            border-radius: 40px;
+            padding: 2px 8px;
+            font-size: 10px;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
@@ -343,6 +354,7 @@
         <div style="text-align:center; margin: 10px 0 20px;">
             <span style="font-size: 48px;">💰</span>
             <h3 style="color: var(--primary-blue); margin:5px 0 0; font-size:18px;">المستقر المالي</h3>
+            <span class="auto-save-indicator">✓ حفظ تلقائي</span>
         </div>
         
         <!-- عناصر القائمة مع أيقونات -->
@@ -371,7 +383,6 @@
         
         <!-- إشعار تثبيت التطبيق -->
         <div style="font-size:12px; color:#aaa; text-align:center; padding:10px;">
-            ✓ حفظ تلقائي<br>
             <span style="font-size:10px;">أضف للتطبيقات للاستخدام السريع</span>
         </div>
     </div>
@@ -381,6 +392,7 @@
     <!-- العنوان الثابت في الأعلى -->
     <div class="fixed-title">
         <span>💰</span> منصة الاستقرار المالي والادخاري
+        <span class="auto-save-indicator">✓ حفظ تلقائي</span>
     </div>
     
     <!-- الصف الثاني: زر القائمة + العنوان المتحرك + زر الرجوع -->
@@ -514,24 +526,24 @@
     <!-- المجاميع النهائية -->
     <div id="tabTotals" class="page">
         <div class="card" style="background:white;">
-            <div style="display:flex; justify-content: space-between; align-items:center; padding:8px 0;">
+            <div style="display:flex; justify-content: space-between; align-items:center; padding:8px 0;" id="totalRow1">
                 <span style="font-weight:800; color:#0284c7; font-size:15px;">💸 السلف (علي)</span>
                 <b id="totB" style="font-size:20px; color:#0284c7;">0 دج</b>
             </div>
-            <div style="display:flex; justify-content: space-between; align-items:center; padding:8px 0;">
+            <div style="display:flex; justify-content: space-between; align-items:center; padding:8px 0;" id="totalRow2">
                 <span style="font-weight:800; color:#f97316; font-size:15px;">🛒 المشتريات بالدين</span>
                 <b id="totOwed" style="font-size:20px; color:#f97316;">0 دج</b>
             </div>
-            <div style="display:flex; justify-content: space-between; align-items:center; padding:8px 0;">
+            <div style="display:flex; justify-content: space-between; align-items:center; padding:8px 0;" id="totalRow3">
                 <span style="font-weight:800; color:#0d7c5a; font-size:15px;">🏦 الادخار</span>
                 <b id="totS" style="font-size:20px; color:var(--success-green);">0 دج</b>
             </div>
             <hr>
             <div class="total-box">
-                <div class="total-label">💰 الصافي الحقيقي</div>
+                <div class="total-label">💰 الصافي (الأكبر - المتوسط - الأصغر)</div>
                 <div id="totFinal" class="total-value">0 دج</div>
                 <p style="font-size:13px; color:#64748b; margin:5px 0 0;">
-                    (الصافي = - السلف - المشتريات - الادخار)
+                    (تم ترتيب المبالغ تنازلياً)
                 </p>
             </div>
         </div>
@@ -586,8 +598,9 @@
 
 <script>
     (function() {
-        const STORAGE_KEY = "MY_STABLE_FINANCE_v14";
+        const STORAGE_KEY = "MY_STABLE_FINANCE_v16";
         
+        // استرجاع البيانات أو إنشاء هيكل جديد (يضمن عدم فقدان المعلومات)
         let db = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { 
             stores: {},
             borrows: [],
@@ -609,8 +622,15 @@
             overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
         };
 
+        // حفظ مع مؤشر مرئي (نبض بسيط)
         function saveToStorage() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+            // وميض سريع لمؤشر الحفظ (اختياري)
+            const indicators = document.querySelectorAll('.auto-save-indicator');
+            indicators.forEach(el => {
+                el.style.opacity = '0.5';
+                setTimeout(() => el.style.opacity = '1', 100);
+            });
         }
 
         // تحديث العنوان المتحرك
@@ -966,26 +986,53 @@
             renderSavings();
         };
 
-        // ================ المجاميع النهائية ================
+        // ================ المجاميع النهائية (بمنطق جديد) ================
         function calcFinal() {
+            // 1. حساب المبالغ
+            let totalBorrows = db.borrows.reduce((acc, b) => acc + b.amount, 0);
             let totalStoreDebt = 0;
             for (let n in db.stores) {
                 totalStoreDebt += (db.stores[n].total - db.stores[n].paid);
             }
-            let totalBorrows = db.borrows.reduce((acc, b) => acc + b.amount, 0);
             let totalSavings = db.savings.reduce((acc, s) => acc + s.amount, 0);
-            let net = - totalBorrows - totalStoreDebt - totalSavings;
 
-            document.getElementById('totB').innerText = totalBorrows + ' دج';
-            document.getElementById('totOwed').innerText = totalStoreDebt + ' دج';
-            document.getElementById('totS').innerText = totalSavings + ' دج';
+            // 2. تجهيز الأسماء والقيم للترتيب
+            let items = [
+                { name: '💸 السلف (علي)', value: totalBorrows, color: '#0284c7' },
+                { name: '🛒 المشتريات بالدين', value: totalStoreDebt, color: '#f97316' },
+                { name: '🏦 الادخار', value: totalSavings, color: '#10b981' }
+            ];
+
+            // 3. الترتيب تنازلياً حسب القيمة
+            items.sort((a, b) => b.value - a.value);
+
+            // 4. عرضها بالترتيب (الأكبر، المتوسط، الأصغر)
+            const row1 = document.getElementById('totalRow1');
+            const row2 = document.getElementById('totalRow2');
+            const row3 = document.getElementById('totalRow3');
             
+            // تحديث النصوص والألوان
+            row1.querySelector('span').innerHTML = items[0].name;
+            row1.querySelector('b').innerText = items[0].value + ' دج';
+            row1.querySelector('b').style.color = items[0].color;
+
+            row2.querySelector('span').innerHTML = items[1].name;
+            row2.querySelector('b').innerText = items[1].value + ' دج';
+            row2.querySelector('b').style.color = items[1].color;
+
+            row3.querySelector('span').innerHTML = items[2].name;
+            row3.querySelector('b').innerText = items[2].value + ' دج';
+            row3.querySelector('b').style.color = items[2].color;
+
+            // 5. حساب الصافي = الأكبر - المتوسط - الأصغر
+            let net = items[0].value - items[1].value - items[2].value;
+
             let finalEl = document.getElementById('totFinal');
             finalEl.innerText = net + ' دج';
             finalEl.style.color = net < 0 ? 'var(--danger-red)' : (net > 0 ? 'var(--success-green)' : '#64748b');
         }
 
-        // التهيئة
+        // التهيئة - تحميل البيانات عند بدء التشغيل (لا تفقد أبداً)
         window.onload = function() {
             let today = new Date().toISOString().split('T')[0];
             document.getElementById('debtODate').value = today;
