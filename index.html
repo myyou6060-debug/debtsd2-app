@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+
+        <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -23,7 +24,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        /* جميع الأنماط كما هي دون تغيير */
         * {
             box-sizing: border-box;
             user-select: none;
@@ -123,8 +123,9 @@
             box-shadow: -5px 0 25px rgba(0,0,0,0.15);
             transition: 0.3s cubic-bezier(0.2, 0.9, 0.3, 1); 
             z-index: 1000;
-            padding: 20px 12px; 
+            padding: 20px 12px 70px;
             border-radius: 30px 0 0 30px;
+            overflow-y: auto;
         }
         .sidebar.open { right: 0; }
         .sidebar-item {
@@ -150,6 +151,11 @@
             position: fixed; top:0; left:0; width:100%; height:100%;
             background: rgba(0,0,0,0.4); display:none; z-index: 999;
             backdrop-filter: blur(3px);
+        }
+        .sidebar-divider {
+            height: 1px;
+            background: #e0e0e0;
+            margin: 15px 0;
         }
         .container {
             flex: 1; overflow-y: auto; padding: 15px 15px 40px;
@@ -352,11 +358,48 @@
             display: block;
             margin-bottom: 10px;
         }
-        /* إضافة فاصل بسيط بين الأزرار */
-        .sidebar-divider {
-            height: 1px;
-            background: #e0e0e0;
-            margin: 15px 0;
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .print-area, .print-area * {
+                visibility: visible;
+            }
+            .print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 20px;
+                background: white;
+                font-family: 'Cairo', sans-serif;
+            }
+            .print-area table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+            .print-area th {
+                background: #f2f5fe;
+                padding: 10px;
+                font-size: 14px;
+            }
+            .print-area td {
+                padding: 8px;
+                border: 1px solid #ddd;
+            }
+            .print-title {
+                font-size: 24px;
+                font-weight: 900;
+                text-align: center;
+                color: var(--primary-blue);
+                margin-bottom: 5px;
+            }
+            .print-subtitle {
+                text-align: center;
+                font-size: 18px;
+                margin-bottom: 20px;
+            }
         }
     </style>
 </head>
@@ -403,7 +446,6 @@
             <span class="sidebar-icon">📥</span>
             <span>استيراد بيانات</span>
         </div>
-        <!-- عنصر input خفي لاختيار ملف -->
         <input type="file" id="importFile" accept=".json,application/json" style="display: none;" onchange="importData(event)">
         
         <div style="flex:1;"></div>
@@ -446,7 +488,7 @@
         <div id="statusMessage" class="status-message"></div>
     </div>
 
-    <!-- السلف -->
+    <!-- السلف (علي) - مع إضافة عمود المستهلك -->
     <div id="tabBorrow" class="page">
         <div class="card" style="background: linear-gradient(145deg, #f0f9ff, #fff);">
             <h3 style="margin:0 0 8px; display:flex; align-items:center; gap:6px; font-size:18px;">
@@ -458,12 +500,20 @@
             <button class="btn" style="background:#0284c7; color:white; box-shadow:0 4px 0 #075985;" onclick="addBorrow()">➕ تسجيل سلفة جديدة</button>
         </div>
         <table>
-            <thead><tr><th>الشخص</th><th>المبلغ</th><th>حذف</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>الشخص</th>
+                    <th>المبلغ (علي)</th>
+                    <th>المستهلك 💸</th>
+                    <th>المتبقي</th>
+                    <th>حذف</th>
+                </tr>
+            </thead>
             <tbody id="borrowTable"></tbody>
         </table>
     </div>
 
-    <!-- المشتريات بالدين -->
+    <!-- المشتريات بالدين (قائمة التجار) -->
     <div id="tabDebtHome" class="page">
         <div class="card" style="text-align: center; background: linear-gradient(145deg, #fff7ed, #fff);">
             <small style="opacity:0.7;">إجمالي المشتريات بالدين (علي) 👈 علي للتجار</small>
@@ -477,10 +527,13 @@
         <div id="storesList"></div>
     </div>
 
-    <!-- عمليات المشتريات -->
+    <!-- صفحة عمليات المشتريات (لكل تاجر) -->
     <div id="tabDebtOps" class="page">
         <div class="card" style="padding: 14px; background:#fff7ed;">
-            <div class="store-name-badge" id="currentStoreName"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div class="store-name-badge" id="currentStoreName"></div>
+                <button class="btn" style="width: auto; padding: 6px 12px; background: #2563eb; color: white; box-shadow: 0 3px 0 #1e3f8f;" onclick="printStoreStatement()">🖨️ طباعة الكشف</button>
+            </div>
             <div class="stats-row">
                 <div class="stat-item">
                     <div class="stat-label">إجمالي المشتريات</div>
@@ -513,10 +566,13 @@
         </table>
     </div>
 
-    <!-- تفاصيل السلع -->
+    <!-- صفحة تفاصيل السلع للمشتريات -->
     <div id="tabDebtDet" class="page">
         <div class="card" style="background:#fff7ed;">
-            <div class="store-name-badge" id="currentStoreNameDet"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div class="store-name-badge" id="currentStoreNameDet"></div>
+                <button class="btn" style="width: auto; padding: 6px 12px; background: #2563eb; color: white; box-shadow: 0 3px 0 #1e3f8f;" onclick="printDebtDetails()">🖨️ طباعة</button>
+            </div>
             <div id="lockMsgDebt">⚠️ تم تجاوز المبلغ الأصلي! يجب تعديل العملية أولاً.</div>
             <div id="debtDetForm">
                 <input type="text" id="debtDItem" placeholder="اسم السلعة">
@@ -533,7 +589,7 @@
         </table>
     </div>
 
-    <!-- الادخار -->
+    <!-- الادخار - مع إضافة عمود المستهلك -->
     <div id="tabSave" class="page">
         <div class="card">
             <h3 style="margin:0 0 8px; font-size:18px;">💰 الادخار الشخصي</h3>
@@ -542,34 +598,63 @@
             <button class="btn" style="background:var(--success-green); color:white; box-shadow:0 4px 0 #0b7e5a;" onclick="addSaving()">إيداع في الادخار</button>
         </div>
         <table>
-            <thead><tr><th>المكان</th><th>المبلغ</th><th>حذف</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>المكان</th>
+                    <th>المبلغ المدخر</th>
+                    <th>المستهلك 💰</th>
+                    <th>المتبقي</th>
+                    <th>حذف</th>
+                </tr>
+            </thead>
             <tbody id="savingsTable"></tbody>
         </table>
     </div>
 
-    <!-- المجاميع النهائية -->
+    <!-- المجاميع النهائية - بالترتيب الجديد -->
     <div id="tabTotals" class="page">
         <div class="card" style="background:white;">
-            <div style="display:flex; justify-content: space-between; align-items:center; padding:8px 0;" id="totalRow1">
-                <span style="font-weight:800; color:#0284c7; font-size:15px;">💸 السلف (علي)</span>
-                <b id="totB" style="font-size:20px; color:#0284c7;">0 دج</b>
+            <!-- 1. المستهلك من الادخار (أخضر) -->
+            <div style="display:flex; justify-content: space-between; align-items:center; padding:8px 0;">
+                <span style="font-weight:800; color:var(--success-green); font-size:15px;">💰 المستهلك من الادخار</span>
+                <b id="totSConsumed" style="font-size:20px; color:var(--success-green);">0 دج</b>
             </div>
-            <div style="display:flex; justify-content: space-between; align-items:center; padding:8px 0;" id="totalRow2">
-                <span style="font-weight:800; color:#f97316; font-size:15px;">🛒 المشتريات بالدين</span>
+            
+            <!-- 2. إجمالي المشتريات بالدين (برتقالي) -->
+            <div style="display:flex; justify-content: space-between; align-items:center; padding:8px 0;">
+                <span style="font-weight:800; color:#f97316; font-size:15px;">🛒 إجمالي المشتريات بالدين</span>
                 <b id="totOwed" style="font-size:20px; color:#f97316;">0 دج</b>
             </div>
-            <div style="display:flex; justify-content: space-between; align-items:center; padding:8px 0;" id="totalRow3">
-                <span style="font-weight:800; color:#0d7c5a; font-size:15px;">🏦 الادخار</span>
-                <b id="totS" style="font-size:20px; color:var(--success-green);">0 دج</b>
+            
+            <!-- 3. المستهلك من السلف (أزرق) -->
+            <div style="display:flex; justify-content: space-between; align-items:center; padding:8px 0;">
+                <span style="font-weight:800; color:#0284c7; font-size:15px;">💸 المستهلك من السلف</span>
+                <b id="totBConsumed" style="font-size:20px; color:#0284c7;">0 دج</b>
             </div>
+            
             <hr>
+            
+            <!-- الصافي = 1 - (2 + 3) -->
             <div class="total-box">
-                <div class="total-label">💰 الصافي = الادخار - (السلف + المشتريات)</div>
+                <div class="total-label">💰 الصافي = الادخار المستهلك - (المشتريات + السلف المستهلك)</div>
                 <div id="totFinal" class="total-value">0 دج</div>
-                <p style="font-size:13px; color:#64748b; margin:5px 0 0;">
-                    (المبالغ معروضة ترتيباً تنازلياً)
-                </p>
             </div>
+            
+            <!-- خط منفصل للعرض فقط -->
+            <hr style="margin: 20px 0 10px 0;">
+            
+            <!-- معلومات إضافية (للاعلام فقط) -->
+            <div style="display:flex; justify-content: space-between; align-items:center; padding:5px 0; font-size:14px; color:#64748b;">
+                <span>المتبقي من السلف:</span>
+                <span id="totBRemainingInfo">0 دج</span>
+            </div>
+            <div style="display:flex; justify-content: space-between; align-items:center; padding:5px 0; font-size:14px; color:#64748b;">
+                <span>المتبقي من الادخار:</span>
+                <span id="totSRemainingInfo">0 دج</span>
+            </div>
+            <p style="font-size:12px; color:#94a3b8; text-align:center; margin-top:10px;">
+                (للاعلام فقط - المتبقي بعد الاستهلاك)
+            </p>
         </div>
     </div>
 </div>
@@ -615,12 +700,12 @@
 
 <script>
     (function() {
-        const STORAGE_KEY = "MY_STABLE_FINANCE_v19";
+        const STORAGE_KEY = "MY_STABLE_FINANCE_v23";
         
         let db = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { 
             stores: {},
-            borrows: [],
-            savings: []
+            borrows: [],      // كل عنصر: { name, amount, consumed }
+            savings: []        // كل عنصر: { place, amount, consumed }
         };
 
         let curStore = "";
@@ -697,40 +782,50 @@
             }
         };
 
-        function getTotalLiabilities() {
-            let totalBorrows = db.borrows.reduce((acc, b) => acc + b.amount, 0);
-            let totalStoreDebt = 0;
-            for (let n in db.stores) {
-                totalStoreDebt += (db.stores[n].total - db.stores[n].paid);
-            }
-            return totalBorrows + totalStoreDebt;
+        function getTotalBorrows() {
+            return db.borrows.reduce((acc, b) => acc + b.amount, 0);
         }
-
+        function getTotalBorrowsConsumed() {
+            return db.borrows.reduce((acc, b) => acc + (b.consumed || 0), 0);
+        }
+        function getTotalBorrowsRemaining() {
+            return getTotalBorrows() - getTotalBorrowsConsumed();
+        }
         function getTotalSavings() {
             return db.savings.reduce((acc, s) => acc + s.amount, 0);
         }
+        function getTotalSavingsConsumed() {
+            return db.savings.reduce((acc, s) => acc + (s.consumed || 0), 0);
+        }
+        function getTotalSavingsRemaining() {
+            return getTotalSavings() - getTotalSavingsConsumed();
+        }
+        function getTotalStoreDebt() {
+            let total = 0;
+            for (let n in db.stores) {
+                total += (db.stores[n].total - db.stores[n].paid);
+            }
+            return total;
+        }
 
         function updateStatusMessage() {
-            const savings = getTotalSavings();
-            const liabilities = getTotalLiabilities();
+            const savingsRemaining = getTotalSavingsRemaining();
+            const borrowsRemaining = getTotalBorrowsRemaining();
             const statusDiv = document.getElementById('statusMessage');
             let html = '';
-            if (savings > liabilities) {
-                html = '<div class="status-message status-positive"><span class="status-emoji">😊</span>الحساب جيد (الادخار أكبر)</div>';
-            } else if (savings < liabilities) {
-                html = '<div class="status-message status-negative"><span class="status-emoji">😱</span>الحساب سيء - يرجى الحذر (الديون أكبر)</div>';
+            if (savingsRemaining > borrowsRemaining) {
+                html = '<div class="status-message status-positive"><span class="status-emoji">😊</span>الوضع جيد (المتبقي من الادخار أكبر)</div>';
+            } else if (savingsRemaining < borrowsRemaining) {
+                html = '<div class="status-message status-negative"><span class="status-emoji">😱</span>الوضع سيء - يرجى الحذر (المتبقي من السلف أكبر)</div>';
             } else {
-                html = '<div class="status-message status-neutral"><span class="status-emoji">😐</span>الحساب متوازن (الادخار = الديون)</div>';
+                html = '<div class="status-message status-neutral"><span class="status-emoji">😐</span>الوضع متوازن</div>';
             }
             statusDiv.innerHTML = html;
         }
 
         function updateHomepageChart() {
             let totalBorrows = db.borrows.reduce((acc, b) => acc + b.amount, 0);
-            let totalPurchases = 0;
-            for (let n in db.stores) {
-                totalPurchases += (db.stores[n].total - db.stores[n].paid);
-            }
+            let totalPurchases = getTotalStoreDebt();
             let totalSavings = db.savings.reduce((acc, s) => acc + s.amount, 0);
 
             const ctx = document.getElementById('financialChart').getContext('2d');
@@ -765,6 +860,96 @@
 
             updateStatusMessage();
         }
+
+        // ================ إدارة السلف ================
+        window.addBorrow = function() {
+            let name = document.getElementById('bName').value.trim();
+            let amt = parseFloat(document.getElementById('bAmt').value);
+            if (!name || !amt) return alert("املأ جميع الحقول");
+            db.borrows.push({ name: name, amount: amt, consumed: 0 });
+            saveToStorage();
+            renderBorrows();
+            document.getElementById('bName').value = '';
+            document.getElementById('bAmt').value = '';
+        };
+
+        window.delBorrow = function(idx) {
+            if (confirm(`حذف السلفة من "${db.borrows[idx].name}"؟`)) {
+                db.borrows.splice(idx, 1);
+                saveToStorage();
+                renderBorrows();
+            }
+        };
+
+        function renderBorrows() {
+            let tbody = document.getElementById('borrowTable');
+            tbody.innerHTML = '';
+            db.borrows.forEach((entry, i) => {
+                const remaining = entry.amount - (entry.consumed || 0);
+                tbody.innerHTML += `<tr>
+                    <td>${entry.name}</td>
+                    <td>${entry.amount} دج</td>
+                    <td class="clickable-amt" onclick="editBorrowConsumed(${i}, ${entry.consumed || 0})">${entry.consumed || 0} دج</td>
+                    <td>${remaining} دج</td>
+                    <td><span style="cursor:pointer; font-size:20px;" onclick="window.delBorrow(${i})">🗑</span></td>
+                </tr>`;
+            });
+        }
+
+        window.editBorrowConsumed = function(idx, current) {
+            const newVal = prompt("أدخل المبلغ المستهلك من هذه السلفة:", current);
+            if (newVal === null) return;
+            const num = parseFloat(newVal);
+            if (isNaN(num) || num < 0) return alert("قيمة غير صحيحة");
+            db.borrows[idx].consumed = num;
+            saveToStorage();
+            renderBorrows();
+        };
+
+        // ================ إدارة الادخار ================
+        window.addSaving = function() {
+            let place = document.getElementById('sPlace').value.trim();
+            let amt = parseFloat(document.getElementById('sAmt').value);
+            if (!place || !amt) return alert("املأ جميع الحقول");
+            db.savings.push({ place: place, amount: amt, consumed: 0 });
+            saveToStorage();
+            renderSavings();
+            document.getElementById('sPlace').value = '';
+            document.getElementById('sAmt').value = '';
+        };
+
+        window.delSaving = function(idx) {
+            if (confirm(`حذف الادخار "${db.savings[idx].place}"؟`)) {
+                db.savings.splice(idx, 1);
+                saveToStorage();
+                renderSavings();
+            }
+        };
+
+        function renderSavings() {
+            let tbody = document.getElementById('savingsTable');
+            tbody.innerHTML = '';
+            db.savings.forEach((entry, i) => {
+                const remaining = entry.amount - (entry.consumed || 0);
+                tbody.innerHTML += `<tr>
+                    <td>${entry.place}</td>
+                    <td>${entry.amount} دج</td>
+                    <td class="clickable-amt" onclick="editSavingConsumed(${i}, ${entry.consumed || 0})">${entry.consumed || 0} دج</td>
+                    <td>${remaining} دج</td>
+                    <td><span style="cursor:pointer; font-size:20px;" onclick="window.delSaving(${i})">🗑</span></td>
+                </tr>`;
+            });
+        }
+
+        window.editSavingConsumed = function(idx, current) {
+            const newVal = prompt("أدخل المبلغ المستهلك من هذا الادخار:", current);
+            if (newVal === null) return;
+            const num = parseFloat(newVal);
+            if (isNaN(num) || num < 0) return alert("قيمة غير صحيحة");
+            db.savings[idx].consumed = num;
+            saveToStorage();
+            renderSavings();
+        };
 
         // ================ إدارة المشتريات بالدين ================
         window.addStore = function() {
@@ -972,101 +1157,147 @@
             renderDebtOps();
         };
 
-        // ================ السلف ================
-        window.addBorrow = function() {
-            let name = document.getElementById('bName').value.trim();
-            let amt = parseFloat(document.getElementById('bAmt').value);
-            if (!name || !amt) return alert("املأ جميع الحقول");
-            db.borrows.push({ name: name, amount: amt });
-            saveToStorage();
-            renderBorrows();
-            document.getElementById('bName').value = '';
-            document.getElementById('bAmt').value = '';
-        };
-
-        window.renderBorrows = function() {
-            let tbody = document.getElementById('borrowTable');
-            tbody.innerHTML = '';
-            db.borrows.forEach((entry, i) => {
-                tbody.innerHTML += `<tr><td>${entry.name}</td><td>${entry.amount} دج</td><td><span style="cursor:pointer;font-size:20px;" onclick="window.delBorrow(${i})">🗑</span></td></tr>`;
-            });
-        };
-
-        window.delBorrow = function(idx) {
-            db.borrows.splice(idx, 1);
-            saveToStorage();
-            renderBorrows();
-        };
-
-        // ================ الادخار ================
-        window.addSaving = function() {
-            let place = document.getElementById('sPlace').value.trim();
-            let amt = parseFloat(document.getElementById('sAmt').value);
-            if (!place || !amt) return alert("املأ جميع الحقول");
-            db.savings.push({ place: place, amount: amt });
-            saveToStorage();
-            renderSavings();
-            document.getElementById('sPlace').value = '';
-            document.getElementById('sAmt').value = '';
-        };
-
-        window.renderSavings = function() {
-            let tbody = document.getElementById('savingsTable');
-            tbody.innerHTML = '';
-            db.savings.forEach((entry, i) => {
-                tbody.innerHTML += `<tr><td>${entry.place}</td><td>${entry.amount} دج</td><td><span style="cursor:pointer;font-size:20px;" onclick="window.delSaving(${i})">🗑</span></td></tr>`;
-            });
-        };
-
-        window.delSaving = function(idx) {
-            db.savings.splice(idx, 1);
-            saveToStorage();
-            renderSavings();
-        };
-
-        // ================ المجاميع النهائية ================
-        function calcFinal() {
-            let totalBorrows = db.borrows.reduce((acc, b) => acc + b.amount, 0);
-            let totalStoreDebt = 0;
-            for (let n in db.stores) {
-                totalStoreDebt += (db.stores[n].total - db.stores[n].paid);
-            }
-            let totalSavings = db.savings.reduce((acc, s) => acc + s.amount, 0);
-
-            // ترتيب العناصر تنازلياً للعرض
-            let items = [
-                { name: '💸 السلف (علي)', value: totalBorrows, color: '#0284c7' },
-                { name: '🛒 المشتريات بالدين', value: totalStoreDebt, color: '#f97316' },
-                { name: '🏦 الادخار', value: totalSavings, color: '#10b981' }
-            ];
-            items.sort((a, b) => b.value - a.value);
-
-            const row1 = document.getElementById('totalRow1');
-            const row2 = document.getElementById('totalRow2');
-            const row3 = document.getElementById('totalRow3');
+        // دالة طباعة كشف حساب التاجر
+        window.printStoreStatement = function() {
+            const store = db.stores[curStore];
+            if (!store) return alert('لا توجد بيانات للتاجر');
             
-            row1.querySelector('span').innerHTML = items[0].name;
-            row1.querySelector('b').innerText = items[0].value + ' دج';
-            row1.querySelector('b').style.color = items[0].color;
+            const history = store.history || [];
+            const total = store.total || 0;
+            const paid = store.paid || 0;
+            const remaining = total - paid;
+            
+            let rows = '';
+            for (let i = history.length - 1; i >= 0; i--) {
+                const op = history[i];
+                const typeText = op.type === 'مشتريات' ? '➕ مشتريات' : '💰 دفع';
+                rows += `<tr><td>${op.date || 'بدون تاريخ'}</td><td>${op.amount} دج</td><td>${typeText}</td></tr>`;
+            }
+            
+            if (rows === '') rows = '<tr><td colspan="3">لا توجد عمليات</td></tr>';
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html dir="rtl">
+                <head>
+                    <title>كشف حساب التاجر - ${curStore}</title>
+                    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800&display=swap" rel="stylesheet">
+                    <style>
+                        body { font-family: 'Cairo', sans-serif; padding: 20px; }
+                        h1 { text-align: center; color: #4c46e9; }
+                        .info { text-align: center; margin-bottom: 20px; }
+                        .summary { display: flex; justify-content: space-around; margin: 20px 0; }
+                        .summary-item { background: #f8fafc; padding: 10px; border-radius: 10px; width: 30%; text-align: center; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th { background: #f97316; color: white; padding: 10px; }
+                        td, th { border: 1px solid #ddd; padding: 8px; text-align: center; }
+                    </style>
+                </head>
+                <body>
+                    <h1>كشف حساب التاجر</h1>
+                    <div class="info">
+                        <p><strong>اسم التاجر:</strong> ${curStore}</p>
+                    </div>
+                    <div class="summary">
+                        <div class="summary-item"><strong>إجمالي المشتريات</strong><br>${total} دج</div>
+                        <div class="summary-item"><strong>مدفوع للتاجر</strong><br>${paid} دج</div>
+                        <div class="summary-item"><strong>المتبقي عليك</strong><br>${remaining} دج</div>
+                    </div>
+                    <h3 style="text-align:center;">سجل العمليات</h3>
+                    <table>
+                        <thead><tr><th>التاريخ</th><th>المبلغ</th><th>النوع</th></tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        };
 
-            row2.querySelector('span').innerHTML = items[1].name;
-            row2.querySelector('b').innerText = items[1].value + ' دج';
-            row2.querySelector('b').style.color = items[1].color;
+        // دالة طباعة تفاصيل السلع
+        window.printDebtDetails = function() {
+            const op = db.stores[curStore].history[curStoreIdx];
+            if (!op) return alert('لا توجد عملية لعرضها');
+            
+            const storeName = curStore;
+            const date = op.date || 'بدون تاريخ';
+            const totalAmount = op.amount;
+            
+            let detailsHtml = '';
+            if (op.details && op.details.length > 0) {
+                op.details.forEach(d => {
+                    detailsHtml += `<tr><td>${d.n}</td><td>${d.q}</td><td>${d.t} دج</td></tr>`;
+                });
+            } else {
+                detailsHtml = '<tr><td colspan="3">لا توجد تفاصيل</td></tr>';
+            }
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html dir="rtl">
+                <head>
+                    <title>طباعة تفاصيل المشتريات</title>
+                    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800&display=swap" rel="stylesheet">
+                    <style>
+                        body { font-family: 'Cairo', sans-serif; padding: 20px; }
+                        h1 { text-align: center; color: #4c46e9; }
+                        .info { text-align: center; margin-bottom: 20px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th { background: #f97316; color: white; padding: 10px; }
+                        td, th { border: 1px solid #ddd; padding: 8px; text-align: center; }
+                    </style>
+                </head>
+                <body>
+                    <h1>تفاصيل المشتريات</h1>
+                    <div class="info">
+                        <p><strong>التاجر:</strong> ${storeName}</p>
+                        <p><strong>التاريخ:</strong> ${date}</p>
+                        <p><strong>المبلغ الإجمالي:</strong> ${totalAmount} دج</p>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr><th>السلعة</th><th>الكمية</th><th>المبلغ</th></tr>
+                        </thead>
+                        <tbody>
+                            ${detailsHtml}
+                        </tbody>
+                    </table>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        };
 
-            row3.querySelector('span').innerHTML = items[2].name;
-            row3.querySelector('b').innerText = items[2].value + ' دج';
-            row3.querySelector('b').style.color = items[2].color;
+        // ================ المجاميع النهائية - بالترتيب الجديد ================
+        function calcFinal() {
+            const totalSavingsConsumed = getTotalSavingsConsumed();
+            const totalStoreDebt = getTotalStoreDebt();
+            const totalBorrowsConsumed = getTotalBorrowsConsumed();
+            const totalBorrowsRemaining = getTotalBorrowsRemaining();
+            const totalSavingsRemaining = getTotalSavingsRemaining();
 
-            let net = totalSavings - (totalBorrows + totalStoreDebt);
+            // عرض القيم الأساسية
+            document.getElementById('totSConsumed').innerText = totalSavingsConsumed + ' دج';
+            document.getElementById('totOwed').innerText = totalStoreDebt + ' دج';
+            document.getElementById('totBConsumed').innerText = totalBorrowsConsumed + ' دج';
+
+            // الصافي = المستهلك من الادخار - (المشتريات + المستهلك من السلف)
+            let net = totalSavingsConsumed - (totalStoreDebt + totalBorrowsConsumed);
             let finalEl = document.getElementById('totFinal');
             finalEl.innerText = net + ' دج';
             finalEl.style.color = net < 0 ? 'var(--danger-red)' : (net > 0 ? 'var(--success-green)' : '#64748b');
+
+            // معلومات إضافية (للاعلام فقط)
+            document.getElementById('totBRemainingInfo').innerText = totalBorrowsRemaining + ' دج';
+            document.getElementById('totSRemainingInfo').innerText = totalSavingsRemaining + ' دج';
         }
 
         // ================ استيراد / تصدير ================
         window.exportData = function() {
             const fileName = prompt("أدخل اسم الملف (سيتم حفظه بامتداد .json)", "Music");
-            if (!fileName) return; // إذا ضغط إلغاء
+            if (!fileName) return;
             const dataStr = JSON.stringify(db, null, 2);
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -1086,13 +1317,10 @@
             reader.onload = function(e) {
                 try {
                     const importedDb = JSON.parse(e.target.result);
-                    // التحقق من صحة البنية (يمكن إضافة المزيد من التحقق)
                     if (typeof importedDb !== 'object' || importedDb === null) throw new Error('ملف غير صالح');
-                    // دمج مع الاحتفاظ بالبيانات الحالية أو استبدال كامل؟ نختار الاستبدال الكامل
                     if (confirm('سيتم استبدال جميع البيانات الحالية بالبيانات المستوردة. هل تريد المتابعة؟')) {
                         db = importedDb;
                         saveToStorage();
-                        // إعادة تحميل كل الصفحات
                         renderBorrows();
                         renderStoresHome();
                         renderSavings();
@@ -1105,7 +1333,6 @@
                 }
             };
             reader.readAsText(file);
-            // إعادة تعيين input file ليتمكن من اختيار نفس الملف مرة أخرى
             event.target.value = '';
         };
 
