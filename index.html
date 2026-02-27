@@ -1,5 +1,4 @@
-
-        <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -242,6 +241,7 @@
         .btn-del {
             background: #fee2e2; color: #b91c1c; border: none;
             border-radius: 40px; padding: 6px 12px; font-weight: 800;
+            cursor: pointer;
         }
         .grand-total {
             font-size: 28px; font-weight: 900; color: var(--primary-blue);
@@ -263,6 +263,7 @@
             font-size: 32px;
             font-weight: 900;
         }
+        /* أنماط الصفوف للعمليات */
         tr.purchase-with-details {
             background-color: #e6f7e6 !important;
         }
@@ -275,6 +276,13 @@
         }
         tr.payment-row {
             background-color: #f0f0f0;
+        }
+        tr.settled-purchase, tr.settled-payment {
+            background-color: #ffcccc !important;
+        }
+        tr.settled-purchase td, tr.settled-payment td {
+            color: #8b0000 !important;
+            font-weight: 900;
         }
         .store-name-badge {
             background: #f97316;
@@ -401,6 +409,96 @@
                 margin-bottom: 20px;
             }
         }
+        .payment-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .payment-option-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 18px;
+            font-family: 'Cairo';
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .payment-option-btn:active {
+            transform: scale(0.95);
+        }
+        .payment-from-borrow {
+            background: #0284c7;
+            color: white;
+            box-shadow: 0 3px 0 #075985;
+        }
+        .payment-from-savings {
+            background: #10b981;
+            color: white;
+            box-shadow: 0 3px 0 #0b7e5a;
+        }
+        /* تنسيق جدول المجاميع */
+        .totals-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .totals-table th {
+            background: #f2f5fe;
+            padding: 12px 5px;
+            font-size: 14px;
+            color: #1e293b;
+            font-weight: 800;
+        }
+        .totals-table td {
+            padding: 12px 5px;
+            text-align: center;
+            border-bottom: 1px solid #ecf1f6;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .row-savings td:first-child {
+            color: #10b981;
+            font-weight: 900;
+        }
+        .row-borrow td:first-child {
+            color: #0284c7;
+            font-weight: 900;
+        }
+        .row-purchases td:first-child {
+            color: #f97316;
+            font-weight: 900;
+        }
+        .net-row {
+            background-color: #f0f4ff;
+            font-weight: 900;
+        }
+        .net-row td {
+            padding: 15px 5px;
+        }
+        .positive {
+            color: var(--success-green);
+        }
+        .negative {
+            color: var(--danger-red);
+        }
+        /* تنسيق جدول التجار */
+        .stores-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .stores-table th {
+            background: #f97316;
+            color: white;
+            padding: 10px 5px;
+            font-size: 13px;
+        }
+        .stores-table td {
+            padding: 10px 5px;
+            text-align: center;
+            border-bottom: 1px solid #ecf1f6;
+        }
     </style>
 </head>
 <body>
@@ -413,7 +511,6 @@
             <span class="auto-save-indicator">✓ حفظ تلقائي</span>
         </div>
         
-        <!-- عناصر القائمة الرئيسية -->
         <div class="sidebar-item" onclick="showPage('tabHomepage')">
             <span class="sidebar-icon">🏠</span>
             <span>الرئيسية</span>
@@ -437,7 +534,6 @@
         
         <div class="sidebar-divider"></div>
         
-        <!-- أزرار استيراد/تصدير -->
         <div class="sidebar-item" onclick="exportData()">
             <span class="sidebar-icon">📤</span>
             <span>تصدير البيانات</span>
@@ -488,7 +584,7 @@
         <div id="statusMessage" class="status-message"></div>
     </div>
 
-    <!-- السلف (علي) - مع إضافة عمود المستهلك -->
+    <!-- السلف (علي) -->
     <div id="tabBorrow" class="page">
         <div class="card" style="background: linear-gradient(145deg, #f0f9ff, #fff);">
             <h3 style="margin:0 0 8px; display:flex; align-items:center; gap:6px; font-size:18px;">
@@ -513,7 +609,7 @@
         </table>
     </div>
 
-    <!-- المشتريات بالدين (قائمة التجار) -->
+    <!-- المشتريات بالدين (قائمة التجار) - تصميم جدولي -->
     <div id="tabDebtHome" class="page">
         <div class="card" style="text-align: center; background: linear-gradient(145deg, #fff7ed, #fff);">
             <small style="opacity:0.7;">إجمالي المشتريات بالدين (علي) 👈 علي للتجار</small>
@@ -524,15 +620,30 @@
             <input type="number" id="storeInit" placeholder="المبلغ الأولي (علي)">
             <button class="btn" style="background:#f97316; color:white; box-shadow:0 4px 0 #c2410c;" onclick="addStore()">➕ إضافة تاجر (علي دين)</button>
         </div>
-        <div id="storesList"></div>
+        
+        <table class="stores-table">
+            <thead>
+                <tr>
+                    <th>اسم التاجر</th>
+                    <th>إجمالي المبلغ</th>
+                    <th>المدفوع</th>
+                    <th>الباقي</th>
+                    <th>حذف</th>
+                </tr>
+            </thead>
+            <tbody id="storesTableBody"></tbody>
+        </table>
     </div>
 
-    <!-- صفحة عمليات المشتريات (لكل تاجر) -->
+    <!-- صفحة عمليات المشتريات (لكل تاجر) - العمليات غير المسددة -->
     <div id="tabDebtOps" class="page">
         <div class="card" style="padding: 14px; background:#fff7ed;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <div class="store-name-badge" id="currentStoreName"></div>
-                <button class="btn" style="width: auto; padding: 6px 12px; background: #2563eb; color: white; box-shadow: 0 3px 0 #1e3f8f;" onclick="printStoreStatement()">🖨️ طباعة الكشف</button>
+                <div style="display: flex; gap: 5px;">
+                    <button class="btn" style="width: auto; padding: 6px 12px; background: #2563eb; color: white; box-shadow: 0 3px 0 #1e3f8f;" onclick="printStoreStatement()">🖨️ طباعة</button>
+                    <button class="btn" style="width: auto; padding: 6px 12px; background: #6c757d; color: white; box-shadow: 0 3px 0 #545b62;" onclick="showPaidRecords()">📜 سجل المدفوعات</button>
+                </div>
             </div>
             <div class="stats-row">
                 <div class="stat-item">
@@ -554,15 +665,39 @@
                 <input type="date" id="debtODate" style="flex:2; min-width:120px;">
                 <input type="number" id="debtOAmt" placeholder="المبلغ" style="flex:1;">
             </div>
-            <div id="debtNormalBtns" style="display: flex; gap: 8px; margin-top:6px;">
+            <div id="debtNormalBtns" style="display: flex; gap: 10px; margin-top:8px;">
                 <button class="btn" style="background:#f59e0b; color:white; font-weight:800; flex:1; box-shadow:0 4px 0 #b45309; font-size:14px; padding:10px;" onclick="addDebtOp('مشتريات')">➕ مشتريات جديدة</button>
-                <button class="btn" style="background:var(--success-green); color:white; flex:1; box-shadow:0 4px 0 #0b7e5a; font-size:14px; padding:10px;" onclick="addDebtOp('دفع')">💰 دفع للتاجر</button>
+                <button class="btn" style="background:var(--success-green); color:white; flex:1; box-shadow:0 4px 0 #0b7e5a; font-size:14px; padding:10px;" onclick="showPaymentOptions()">💰 دفع للتاجر</button>
             </div>
+            
+            <div id="paymentOptions" style="display: none; margin-top: 10px;">
+                <div class="payment-options">
+                    <button class="payment-option-btn payment-from-borrow" onclick="processPayment('borrow')">💸 دفع من السلف</button>
+                    <button class="payment-option-btn payment-from-savings" onclick="processPayment('savings')">💰 دفع من الادخار</button>
+                </div>
+                <button class="btn" style="background:#6c757d; color:white; margin-top:5px; padding:8px;" onclick="hidePaymentOptions()">إلغاء</button>
+            </div>
+            
             <button id="debtUpdateBtn" class="btn btn-update" onclick="confirmDebtUpdate()" style="padding:10px;">✅ تأكيد تعديل المبلغ</button>
         </div>
         <table>
             <thead><tr><th>التاريخ</th><th>المبلغ</th><th>نوع</th><th>تفاصيل</th><th>حذف</th></tr></thead>
             <tbody id="debtOpsTable"></tbody>
+        </table>
+    </div>
+
+    <!-- صفحة سجل المدفوعات (العمليات المسددة) مع زر حذف -->
+    <div id="tabDebtPaid" class="page">
+        <div class="card" style="background:#fff7ed;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div class="store-name-badge" id="currentStoreNamePaid"></div>
+                <button class="btn" style="width: auto; padding: 6px 12px; background: #6c757d; color: white; box-shadow: 0 3px 0 #545b62;" onclick="goBackToOps()">🔙 العودة للعمليات</button>
+            </div>
+            <h3 style="margin:0 0 10px; text-align: center;">📜 سجل المشتريات المدفوعة</h3>
+        </div>
+        <table>
+            <thead><tr><th>التاريخ</th><th>المبلغ</th><th>نوع</th><th>تفاصيل</th><th>المصدر</th><th>حذف</th></tr></thead>
+            <tbody id="debtPaidTable"></tbody>
         </table>
     </div>
 
@@ -589,7 +724,7 @@
         </table>
     </div>
 
-    <!-- الادخار - مع إضافة عمود المستهلك -->
+    <!-- الادخار -->
     <div id="tabSave" class="page">
         <div class="card">
             <h3 style="margin:0 0 8px; font-size:18px;">💰 الادخار الشخصي</h3>
@@ -611,50 +746,54 @@
         </table>
     </div>
 
-    <!-- المجاميع النهائية - بالترتيب الجديد -->
+    <!-- المجاميع النهائية -->
     <div id="tabTotals" class="page">
         <div class="card" style="background:white;">
-            <!-- 1. المستهلك من الادخار (أخضر) -->
-            <div style="display:flex; justify-content: space-between; align-items:center; padding:8px 0;">
-                <span style="font-weight:800; color:var(--success-green); font-size:15px;">💰 المستهلك من الادخار</span>
-                <b id="totSConsumed" style="font-size:20px; color:var(--success-green);">0 دج</b>
-            </div>
-            
-            <!-- 2. إجمالي المشتريات بالدين (برتقالي) -->
-            <div style="display:flex; justify-content: space-between; align-items:center; padding:8px 0;">
-                <span style="font-weight:800; color:#f97316; font-size:15px;">🛒 إجمالي المشتريات بالدين</span>
-                <b id="totOwed" style="font-size:20px; color:#f97316;">0 دج</b>
-            </div>
-            
-            <!-- 3. المستهلك من السلف (أزرق) -->
-            <div style="display:flex; justify-content: space-between; align-items:center; padding:8px 0;">
-                <span style="font-weight:800; color:#0284c7; font-size:15px;">💸 المستهلك من السلف</span>
-                <b id="totBConsumed" style="font-size:20px; color:#0284c7;">0 دج</b>
-            </div>
-            
+            <table class="totals-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>الإجمالي</th>
+                        <th>المستهلك</th>
+                        <th>الباقي</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="row-savings">
+                        <td>💰 الادخار</td>
+                        <td id="totSavingsTotal">0 دج</td>
+                        <td id="totSavingsConsumed">0 دج</td>
+                        <td id="totSavingsRemaining">0 دج</td>
+                    </tr>
+                    <tr class="row-borrow">
+                        <td>💸 السلف</td>
+                        <td id="totBorrowsTotal">0 دج</td>
+                        <td id="totBorrowsConsumed">0 دج</td>
+                        <td id="totBorrowsRemaining">0 دج</td>
+                    </tr>
+                    <tr class="row-purchases">
+                        <td>🛒 المشتريات بالدين</td>
+                        <td id="totPurchasesTotal">0 دج</td>
+                        <td>-</td>
+                        <td id="totPurchasesRemaining">0 دج</td>
+                    </tr>
+                </tbody>
+            </table>
+
             <hr>
-            
-            <!-- الصافي = 1 - (2 + 3) -->
-            <div class="total-box">
-                <div class="total-label">💰 الصافي = الادخار المستهلك - (المشتريات + السلف المستهلك)</div>
-                <div id="totFinal" class="total-value">0 دج</div>
+
+            <div style="display: flex; justify-content: space-around; margin-top: 15px;">
+                <div style="text-align: center;">
+                    <div style="font-weight: 700; color: #475569;">صافي المستهلك</div>
+                    <div id="netConsumed" class="total-value" style="font-size: 28px;">0 دج</div>
+                    <div style="font-size: 12px; color: #64748b;">(مدفوعات التجار - استهلاك الادخار والسلف)</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-weight: 700; color: #475569;">صافي الباقي</div>
+                    <div id="netRemaining" class="total-value" style="font-size: 28px;">0 دج</div>
+                    <div style="font-size: 12px; color: #64748b;">(المتبقي من الادخار - المتبقي من السلف)</div>
+                </div>
             </div>
-            
-            <!-- خط منفصل للعرض فقط -->
-            <hr style="margin: 20px 0 10px 0;">
-            
-            <!-- معلومات إضافية (للاعلام فقط) -->
-            <div style="display:flex; justify-content: space-between; align-items:center; padding:5px 0; font-size:14px; color:#64748b;">
-                <span>المتبقي من السلف:</span>
-                <span id="totBRemainingInfo">0 دج</span>
-            </div>
-            <div style="display:flex; justify-content: space-between; align-items:center; padding:5px 0; font-size:14px; color:#64748b;">
-                <span>المتبقي من الادخار:</span>
-                <span id="totSRemainingInfo">0 دج</span>
-            </div>
-            <p style="font-size:12px; color:#94a3b8; text-align:center; margin-top:10px;">
-                (للاعلام فقط - المتبقي بعد الاستهلاك)
-            </p>
         </div>
     </div>
 </div>
@@ -700,7 +839,7 @@
 
 <script>
     (function() {
-        const STORAGE_KEY = "MY_STABLE_FINANCE_v23";
+        const STORAGE_KEY = "MY_STABLE_FINANCE_v28";
         
         let db = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { 
             stores: {},
@@ -738,7 +877,13 @@
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             if (push && pageStack[pageStack.length - 1] !== id) pageStack.push(id);
-            document.getElementById('btnBack').style.display = (id === 'tabHomepage' || id === 'tabBorrow' || id === 'tabDebtHome') ? 'none' : 'block';
+            
+            const backBtn = document.getElementById('btnBack');
+            if (id === 'tabHomepage' || id === 'tabBorrow' || id === 'tabDebtHome') {
+                backBtn.style.display = 'none';
+            } else {
+                backBtn.style.display = 'block';
+            }
 
             if (id === 'tabHomepage') { 
                 updateDynamicTitle('🏠', 'الرئيسية · الرسم البياني');
@@ -750,13 +895,18 @@
             }
             else if (id === 'tabDebtHome') { 
                 updateDynamicTitle('🛒', 'المشتريات بالدين · علي للتجار');
-                renderStoresHome(); 
+                renderStoresTable(); 
             }
             else if (id === 'tabDebtOps') {
-                updateDynamicTitle('🛒', `${curStore} · عمليات المشتريات`);
+                updateDynamicTitle('🛒', `${curStore} · العمليات الحالية`);
                 document.getElementById('currentStoreName').innerText = curStore;
                 renderDebtOps();
                 updateDebtStats();
+            }
+            else if (id === 'tabDebtPaid') {
+                updateDynamicTitle('📜', `${curStore} · سجل المدفوعات`);
+                document.getElementById('currentStoreNamePaid').innerText = curStore;
+                renderDebtPaid();
             }
             else if (id === 'tabDebtDet') {
                 updateDynamicTitle('📋', 'تفاصيل المشتريات');
@@ -782,6 +932,7 @@
             }
         };
 
+        // دوال مساعدة للحسابات
         function getTotalBorrows() {
             return db.borrows.reduce((acc, b) => acc + b.amount, 0);
         }
@@ -804,6 +955,13 @@
             let total = 0;
             for (let n in db.stores) {
                 total += (db.stores[n].total - db.stores[n].paid);
+            }
+            return total;
+        }
+        function getTotalPaidToStores() {
+            let total = 0;
+            for (let n in db.stores) {
+                total += db.stores[n].paid;
             }
             return total;
         }
@@ -963,7 +1121,7 @@
                 db.stores[name].history.push({ date: 'بداية', amount: initAmount, type: 'مشتريات', details: [] });
             }
             saveToStorage();
-            renderStoresHome();
+            renderStoresTable();
             document.getElementById('storeName').value = '';
             document.getElementById('storeInit').value = '';
         };
@@ -972,29 +1130,27 @@
             if (confirm(`حذف جميع بيانات التاجر "${name}"؟`)) {
                 delete db.stores[name];
                 saveToStorage();
-                renderStoresHome();
+                renderStoresTable();
             }
         };
 
-        function renderStoresHome() {
-            let container = document.getElementById('storesList');
+        // عرض قائمة التجار في جدول
+        function renderStoresTable() {
+            let tbody = document.getElementById('storesTableBody');
+            tbody.innerHTML = '';
             let totalDebt = 0;
-            container.innerHTML = '';
             for (let name in db.stores) {
-                let remaining = (db.stores[name].total - db.stores[name].paid);
+                let total = db.stores[name].total;
+                let paid = db.stores[name].paid;
+                let remaining = total - paid;
                 totalDebt += remaining;
-                container.innerHTML += `
-                    <div class="card" style="padding:10px 14px; margin-bottom:8px; cursor:pointer; background:#fff7ed;" onclick="openStoreOps('${name}')">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div>
-                                <span style="font-weight:900; font-size:17px;">${name}</span><br>
-                                <span style="color:${remaining >= 0 ? '#c2410c' : '#059669'}; font-size:18px; font-weight:900;">
-                                    المتبقي: ${remaining} دج
-                                </span>
-                            </div>
-                            <button class="btn-del" onclick="event.stopPropagation(); window.delStore('${name}')" style="padding:5px 10px;">🗑</button>
-                        </div>
-                    </div>`;
+                tbody.innerHTML += `<tr onclick="openStoreOps('${name}')" style="cursor:pointer;">
+                    <td>${name}</td>
+                    <td>${total} دج</td>
+                    <td>${paid} دج</td>
+                    <td>${remaining} دج</td>
+                    <td><button class="btn-del" onclick="event.stopPropagation(); window.delStore('${name}')">🗑</button></td>
+                </tr>`;
             }
             document.getElementById('grandDebtOwed').innerText = totalDebt + ' دج';
         }
@@ -1004,14 +1160,75 @@
             window.showPage('tabDebtOps');
         };
 
+        // دوال للتبديل بين صفحات العمليات
+        window.showPaidRecords = function() {
+            window.showPage('tabDebtPaid');
+        };
+
+        window.goBackToOps = function() {
+            window.showPage('tabDebtOps');
+        };
+
+        // دالة للتحقق مما إذا كانت مشتريات معينة قد تم تسديدها
+        function isPurchaseSettled(purchaseIndex) {
+            const store = db.stores[curStore];
+            const purchase = store.history[purchaseIndex];
+            if (purchase.type !== 'مشتريات') return false;
+            
+            for (let i = purchaseIndex + 1; i < store.history.length; i++) {
+                const op = store.history[i];
+                if (op.type === 'دفع' && op.amount === purchase.amount) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // دالة عرض العمليات غير المسددة (في tabDebtOps)
         function renderDebtOps() {
             let history = db.stores[curStore].history || [];
             let tbody = document.getElementById('debtOpsTable');
             tbody.innerHTML = '';
             
+            let settledPairs = [];
+            let unsettledOps = [];
+            
             for (let i = history.length - 1; i >= 0; i--) {
                 let op = history[i];
                 let idx = i;
+                
+                if (op.type === 'مشتريات') {
+                    let isSettled = false;
+                    for (let j = i + 1; j < history.length; j++) {
+                        if (history[j].type === 'دفع' && history[j].amount === op.amount) {
+                            isSettled = true;
+                            settledPairs.push({
+                                purchase: { op, idx },
+                                payment: { op: history[j], idx: j }
+                            });
+                            break;
+                        }
+                    }
+                    if (!isSettled) {
+                        unsettledOps.push({ op, idx, type: 'مشتريات' });
+                    }
+                } else if (op.type === 'دفع') {
+                    let isPartOfSettled = false;
+                    for (let j = i - 1; j >= 0; j--) {
+                        if (history[j].type === 'مشتريات' && history[j].amount === op.amount) {
+                            isPartOfSettled = true;
+                            break;
+                        }
+                    }
+                    if (!isPartOfSettled) {
+                        unsettledOps.push({ op, idx, type: 'دفع' });
+                    }
+                }
+            }
+            
+            for (let item of unsettledOps) {
+                let op = item.op;
+                let idx = item.idx;
                 
                 if (op.type === 'مشتريات') {
                     let hasDetails = op.details && op.details.length > 0;
@@ -1025,16 +1242,130 @@
                         <td><span style="cursor:pointer; font-size:20px;" onclick="window.delDebtOp(${idx})">🗑</span></td>
                     </tr>`;
                 } else {
+                    let sourceIcon = '';
+                    if (op.source === 'borrow') sourceIcon = '💸';
+                    else if (op.source === 'savings') sourceIcon = '💰';
+                    
                     tbody.innerHTML += `<tr class="payment-row">
                         <td>${op.date || 'بدون تاريخ'}</td>
                         <td class="clickable-amt" onclick="window.startDebtEdit(${idx}, ${op.amount})">${op.amount}</td>
-                        <td>💰 دفع</td>
+                        <td>💰 دفع ${sourceIcon ? 'من ' + sourceIcon : ''}</td>
                         <td>—</td>
                         <td><span style="cursor:pointer; font-size:20px;" onclick="window.delDebtOp(${idx})">🗑</span></td>
                     </tr>`;
                 }
             }
         }
+
+        // دالة عرض العمليات المسددة (في tabDebtPaid) مع زر حذف
+        function renderDebtPaid() {
+            let history = db.stores[curStore].history || [];
+            let tbody = document.getElementById('debtPaidTable');
+            tbody.innerHTML = '';
+            
+            let settledPairs = [];
+            
+            for (let i = history.length - 1; i >= 0; i--) {
+                let op = history[i];
+                let idx = i;
+                
+                if (op.type === 'مشتريات') {
+                    for (let j = i + 1; j < history.length; j++) {
+                        if (history[j].type === 'دفع' && history[j].amount === op.amount) {
+                            settledPairs.push({
+                                purchase: { op, idx },
+                                payment: { op: history[j], idx: j }
+                            });
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            for (let pair of settledPairs) {
+                let purchaseOp = pair.purchase.op;
+                let purchaseIdx = pair.purchase.idx;
+                let sourceIcon = '';
+                if (pair.payment.op.source === 'borrow') sourceIcon = '💸 من سلف';
+                else if (pair.payment.op.source === 'savings') sourceIcon = '💰 من ادخار';
+                
+                tbody.innerHTML += `<tr class="settled-purchase">
+                    <td>${purchaseOp.date || 'بدون تاريخ'}</td>
+                    <td>${purchaseOp.amount}</td>
+                    <td>➕ مشتريات (مسدد)</td>
+                    <td><button class="btn" style="padding:4px; width:30px; background:#ffcccc; font-size:14px;" onclick="window.openDebtDet(${purchaseIdx})">📋</button></td>
+                    <td>${sourceIcon}</td>
+                    <td><span style="cursor:pointer; font-size:20px; color: #b91c1c;" onclick="window.deleteSettledPair(${purchaseIdx}, ${pair.payment.idx})">🗑</span></td>
+                </tr>`;
+                
+                let paymentOp = pair.payment.op;
+                tbody.innerHTML += `<tr class="settled-payment">
+                    <td>${paymentOp.date || 'بدون تاريخ'}</td>
+                    <td>${paymentOp.amount}</td>
+                    <td>💰 دفع (مسدد)</td>
+                    <td>—</td>
+                    <td>${sourceIcon}</td>
+                    <td><span style="cursor:pointer; font-size:20px; color: #b91c1c;" onclick="window.deleteSettledPair(${purchaseIdx}, ${pair.payment.idx})">🗑</span></td>
+                </tr>`;
+            }
+            
+            if (settledPairs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">لا توجد عمليات مسددة</td></tr>';
+            }
+        }
+
+        // حذف زوج مسدد (مشتريات + دفع)
+        window.deleteSettledPair = function(purchaseIdx, paymentIdx) {
+            if (!confirm('هل أنت متأكد من حذف هذه العملية المسددة؟')) return;
+            
+            const store = db.stores[curStore];
+            const purchaseOp = store.history[purchaseIdx];
+            const paymentOp = store.history[paymentIdx];
+            
+            // استرجاع المبالغ من المصادر
+            if (paymentOp.source === 'borrow') {
+                let remainingToReturn = paymentOp.amount;
+                for (let i = 0; i < db.borrows.length; i++) {
+                    const borrowConsumed = db.borrows[i].consumed || 0;
+                    if (borrowConsumed > 0) {
+                        const returnFromThis = Math.min(borrowConsumed, remainingToReturn);
+                        db.borrows[i].consumed = borrowConsumed - returnFromThis;
+                        remainingToReturn -= returnFromThis;
+                        if (remainingToReturn <= 0) break;
+                    }
+                }
+            } else if (paymentOp.source === 'savings') {
+                let remainingToReturn = paymentOp.amount;
+                for (let i = 0; i < db.savings.length; i++) {
+                    const savingConsumed = db.savings[i].consumed || 0;
+                    if (savingConsumed > 0) {
+                        const returnFromThis = Math.min(savingConsumed, remainingToReturn);
+                        db.savings[i].consumed = savingConsumed - returnFromThis;
+                        remainingToReturn -= returnFromThis;
+                        if (remainingToReturn <= 0) break;
+                    }
+                }
+            }
+            
+            // حذف العمليات من تاريخ التاجر (يجب حذف الأكبر index أولاً)
+            if (purchaseIdx > paymentIdx) {
+                store.history.splice(purchaseIdx, 1);
+                store.history.splice(paymentIdx, 1);
+            } else {
+                store.history.splice(paymentIdx, 1);
+                store.history.splice(purchaseIdx, 1);
+            }
+            
+            // تحديث إجماليات التاجر
+            store.total -= purchaseOp.amount;
+            store.paid -= paymentOp.amount;
+            
+            saveToStorage();
+            renderBorrows();
+            renderSavings();
+            renderDebtPaid(); // إعادة عرض الصفحة الحالية
+            renderStoresTable(); // تحديث جدول التجار
+        };
 
         function updateDebtStats() {
             if (!curStore || !db.stores[curStore]) return;
@@ -1048,6 +1379,93 @@
             document.getElementById('debtStatsRemaining').innerText = remaining + ' دج';
         }
 
+        window.showPaymentOptions = function() {
+            document.getElementById('paymentOptions').style.display = 'block';
+            document.getElementById('debtNormalBtns').style.display = 'none';
+        };
+
+        window.hidePaymentOptions = function() {
+            document.getElementById('paymentOptions').style.display = 'none';
+            document.getElementById('debtNormalBtns').style.display = 'flex';
+        };
+
+        window.processPayment = function(source) {
+            const amt = parseFloat(document.getElementById('debtOAmt').value);
+            if (!amt || amt <= 0) {
+                alert("أدخل مبلغ صحيح أولاً");
+                return;
+            }
+            
+            const date = document.getElementById('debtODate').value;
+            const displayDate = date ? date.split('-').reverse().slice(0,2).join('/') : 'اليوم';
+            const store = db.stores[curStore];
+            
+            if (source === 'borrow') {
+                if (getTotalBorrowsRemaining() < amt) {
+                    alert("المبلغ المطلوب أكبر من المتبقي في السلف!");
+                    return;
+                }
+                
+                let remainingToConsume = amt;
+                for (let i = 0; i < db.borrows.length; i++) {
+                    const borrowRemaining = db.borrows[i].amount - (db.borrows[i].consumed || 0);
+                    if (borrowRemaining > 0) {
+                        const consumeFromThis = Math.min(borrowRemaining, remainingToConsume);
+                        db.borrows[i].consumed = (db.borrows[i].consumed || 0) + consumeFromThis;
+                        remainingToConsume -= consumeFromThis;
+                        if (remainingToConsume <= 0) break;
+                    }
+                }
+                
+                store.paid += amt;
+                store.history.push({ 
+                    date: displayDate, 
+                    amount: amt, 
+                    type: 'دفع', 
+                    source: 'borrow',
+                    details: [] 
+                });
+                
+                saveToStorage();
+                renderBorrows();
+                
+            } else if (source === 'savings') {
+                if (getTotalSavingsRemaining() < amt) {
+                    alert("المبلغ المطلوب أكبر من المتبقي في الادخار!");
+                    return;
+                }
+                
+                let remainingToConsume = amt;
+                for (let i = 0; i < db.savings.length; i++) {
+                    const savingRemaining = db.savings[i].amount - (db.savings[i].consumed || 0);
+                    if (savingRemaining > 0) {
+                        const consumeFromThis = Math.min(savingRemaining, remainingToConsume);
+                        db.savings[i].consumed = (db.savings[i].consumed || 0) + consumeFromThis;
+                        remainingToConsume -= consumeFromThis;
+                        if (remainingToConsume <= 0) break;
+                    }
+                }
+                
+                store.paid += amt;
+                store.history.push({ 
+                    date: displayDate, 
+                    amount: amt, 
+                    type: 'دفع', 
+                    source: 'savings',
+                    details: [] 
+                });
+                
+                saveToStorage();
+                renderSavings();
+            }
+            
+            renderDebtOps();
+            updateDebtStats();
+            renderStoresTable(); // تحديث جدول التجار
+            document.getElementById('debtOAmt').value = '';
+            hidePaymentOptions();
+        };
+
         window.addDebtOp = function(type) {
             let amt = parseFloat(document.getElementById('debtOAmt').value);
             if (!amt || amt <= 0) return alert("أدخل مبلغ صحيح");
@@ -1058,14 +1476,12 @@
             if (type === 'مشتريات') {
                 store.total += amt;
                 store.history.push({ date: displayDate, amount: amt, type: 'مشتريات', details: [] });
-            } else {
-                store.paid += amt;
-                store.history.push({ date: displayDate, amount: amt, type: 'دفع', details: [] });
             }
 
             saveToStorage();
             renderDebtOps();
             updateDebtStats();
+            renderStoresTable();
             document.getElementById('debtOAmt').value = '';
         };
 
@@ -1074,6 +1490,7 @@
             document.getElementById('debtOAmt').value = currentAmt;
             document.getElementById('debtNormalBtns').style.display = 'none';
             document.getElementById('debtUpdateBtn').style.display = 'block';
+            document.getElementById('paymentOptions').style.display = 'none';
         };
 
         window.confirmDebtUpdate = function() {
@@ -1088,6 +1505,7 @@
             saveToStorage();
             renderDebtOps();
             updateDebtStats();
+            renderStoresTable();
             document.getElementById('debtNormalBtns').style.display = 'flex';
             document.getElementById('debtUpdateBtn').style.display = 'none';
             document.getElementById('debtOAmt').value = '';
@@ -1096,12 +1514,43 @@
         window.delDebtOp = function(idx) {
             let store = db.stores[curStore];
             let op = store.history[idx];
+            
+            if (op.type === 'دفع' && op.source) {
+                if (op.source === 'borrow') {
+                    let remainingToReturn = op.amount;
+                    for (let i = 0; i < db.borrows.length; i++) {
+                        const borrowConsumed = db.borrows[i].consumed || 0;
+                        if (borrowConsumed > 0) {
+                            const returnFromThis = Math.min(borrowConsumed, remainingToReturn);
+                            db.borrows[i].consumed = borrowConsumed - returnFromThis;
+                            remainingToReturn -= returnFromThis;
+                            if (remainingToReturn <= 0) break;
+                        }
+                    }
+                } else if (op.source === 'savings') {
+                    let remainingToReturn = op.amount;
+                    for (let i = 0; i < db.savings.length; i++) {
+                        const savingConsumed = db.savings[i].consumed || 0;
+                        if (savingConsumed > 0) {
+                            const returnFromThis = Math.min(savingConsumed, remainingToReturn);
+                            db.savings[i].consumed = savingConsumed - returnFromThis;
+                            remainingToReturn -= returnFromThis;
+                            if (remainingToReturn <= 0) break;
+                        }
+                    }
+                }
+            }
+            
             if (op.type === 'مشتريات') store.total -= op.amount;
             else store.paid -= op.amount;
+            
             store.history.splice(idx, 1);
             saveToStorage();
+            renderBorrows();
+            renderSavings();
             renderDebtOps();
             updateDebtStats();
+            renderStoresTable();
         };
 
         // ================ تفاصيل السلع ================
@@ -1157,7 +1606,6 @@
             renderDebtOps();
         };
 
-        // دالة طباعة كشف حساب التاجر
         window.printStoreStatement = function() {
             const store = db.stores[curStore];
             if (!store) return alert('لا توجد بيانات للتاجر');
@@ -1170,7 +1618,9 @@
             let rows = '';
             for (let i = history.length - 1; i >= 0; i--) {
                 const op = history[i];
-                const typeText = op.type === 'مشتريات' ? '➕ مشتريات' : '💰 دفع';
+                let typeText = op.type === 'مشتريات' ? '➕ مشتريات' : '💰 دفع';
+                if (op.source === 'borrow') typeText += ' (من سلف)';
+                else if (op.source === 'savings') typeText += ' (من ادخار)';
                 rows += `<tr><td>${op.date || 'بدون تاريخ'}</td><td>${op.amount} دج</td><td>${typeText}</td></tr>`;
             }
             
@@ -1215,7 +1665,6 @@
             printWindow.print();
         };
 
-        // دالة طباعة تفاصيل السلع
         window.printDebtDetails = function() {
             const op = db.stores[curStore].history[curStoreIdx];
             if (!op) return alert('لا توجد عملية لعرضها');
@@ -1270,28 +1719,43 @@
             printWindow.print();
         };
 
-        // ================ المجاميع النهائية - بالترتيب الجديد ================
+        // ================ المجاميع النهائية بالتصميم الجديد ================
         function calcFinal() {
+            const totalSavings = getTotalSavings();
             const totalSavingsConsumed = getTotalSavingsConsumed();
-            const totalStoreDebt = getTotalStoreDebt();
+            const totalSavingsRemaining = getTotalSavingsRemaining();
+            
+            const totalBorrows = getTotalBorrows();
             const totalBorrowsConsumed = getTotalBorrowsConsumed();
             const totalBorrowsRemaining = getTotalBorrowsRemaining();
-            const totalSavingsRemaining = getTotalSavingsRemaining();
+            
+            const totalPurchases = getTotalStoreDebt();
+            const totalPaid = getTotalPaidToStores();
 
-            // عرض القيم الأساسية
-            document.getElementById('totSConsumed').innerText = totalSavingsConsumed + ' دج';
-            document.getElementById('totOwed').innerText = totalStoreDebt + ' دج';
-            document.getElementById('totBConsumed').innerText = totalBorrowsConsumed + ' دج';
+            // تحديث جدول المجاميع
+            document.getElementById('totSavingsTotal').innerText = totalSavings + ' دج';
+            document.getElementById('totSavingsConsumed').innerText = totalSavingsConsumed + ' دج';
+            document.getElementById('totSavingsRemaining').innerText = totalSavingsRemaining + ' دج';
+            
+            document.getElementById('totBorrowsTotal').innerText = totalBorrows + ' دج';
+            document.getElementById('totBorrowsConsumed').innerText = totalBorrowsConsumed + ' دج';
+            document.getElementById('totBorrowsRemaining').innerText = totalBorrowsRemaining + ' دج';
+            
+            document.getElementById('totPurchasesTotal').innerText = totalPurchases + ' دج';
+            document.getElementById('totPurchasesRemaining').innerText = totalPurchases + ' دج';
 
-            // الصافي = المستهلك من الادخار - (المشتريات + المستهلك من السلف)
-            let net = totalSavingsConsumed - (totalStoreDebt + totalBorrowsConsumed);
-            let finalEl = document.getElementById('totFinal');
-            finalEl.innerText = net + ' دج';
-            finalEl.style.color = net < 0 ? 'var(--danger-red)' : (net > 0 ? 'var(--success-green)' : '#64748b');
+            // حساب الصافيين
+            const netConsumed = totalPaid - (totalSavingsConsumed + totalBorrowsConsumed);
+            const netRemaining = totalSavingsRemaining - totalBorrowsRemaining;
 
-            // معلومات إضافية (للاعلام فقط)
-            document.getElementById('totBRemainingInfo').innerText = totalBorrowsRemaining + ' دج';
-            document.getElementById('totSRemainingInfo').innerText = totalSavingsRemaining + ' دج';
+            const netConsumedEl = document.getElementById('netConsumed');
+            const netRemainingEl = document.getElementById('netRemaining');
+            
+            netConsumedEl.innerText = netConsumed + ' دج';
+            netRemainingEl.innerText = netRemaining + ' دج';
+            
+            netConsumedEl.className = netConsumed < 0 ? 'negative total-value' : (netConsumed > 0 ? 'positive total-value' : 'total-value');
+            netRemainingEl.className = netRemaining < 0 ? 'negative total-value' : (netRemaining > 0 ? 'positive total-value' : 'total-value');
         }
 
         // ================ استيراد / تصدير ================
@@ -1322,7 +1786,7 @@
                         db = importedDb;
                         saveToStorage();
                         renderBorrows();
-                        renderStoresHome();
+                        renderStoresTable();
                         renderSavings();
                         if (document.getElementById('tabHomepage').classList.contains('active')) updateHomepageChart();
                         if (document.getElementById('tabTotals').classList.contains('active')) calcFinal();
@@ -1341,7 +1805,7 @@
             document.getElementById('debtODate').value = today;
             
             renderBorrows();
-            renderStoresHome();
+            renderStoresTable();
             renderSavings();
             
             showPage('tabHomepage', false);
@@ -1349,12 +1813,14 @@
 
         window.calcFinal = calcFinal;
         window.renderBorrows = renderBorrows;
-        window.renderStoresHome = renderStoresHome;
+        window.renderStoresTable = renderStoresTable;
         window.renderDebtOps = renderDebtOps;
+        window.renderDebtPaid = renderDebtPaid;
         window.renderDebtDet = renderDebtDet;
         window.renderSavings = renderSavings;
         window.updateDebtStats = updateDebtStats;
         window.updateStatusMessage = updateStatusMessage;
+        window.hidePaymentOptions = hidePaymentOptions;
     })();
 </script>
 </body>
