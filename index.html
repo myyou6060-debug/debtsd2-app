@@ -12,14 +12,6 @@
     <meta name="theme-color" content="#1a1f3a">
     <link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%231a1f3a'/%3E%3Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='%23f5c842' font-family='Arial'%3E💰%3C/text%3E%3C/svg%3E">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%231a1f3a'/%3E%3Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='%23f5c842' font-family='Arial'%3E💰%3C/text%3E%3C/svg%3E">
-    <!-- PWA Manifest -->
-
-    <!-- iOS PWA -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="المستقر المالي">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%231a1f3a'/%3E%3Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='%23f5c842' font-family='Arial'%3E%F0%9F%92%B0%3C/text%3E%3C/svg%3E">
-
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
@@ -148,30 +140,6 @@
             transition: 0.2s;
         }
         .back-btn:active { transform: scale(0.95); }
-
-        /* زر التثبيت PWA */
-        #installBtn {
-            display: none;
-            align-items: center;
-            gap: 5px;
-            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-            color: var(--navy);
-            border: none;
-            border-radius: 20px;
-            padding: 6px 14px;
-            font-family: 'Cairo', sans-serif;
-            font-size: 12px;
-            font-weight: 800;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(245,200,66,0.4);
-            transition: 0.2s;
-            animation: pulse-install 2s infinite;
-        }
-        #installBtn:active { transform: scale(0.95); }
-        @keyframes pulse-install {
-            0%, 100% { box-shadow: 0 4px 12px rgba(245,200,66,0.4); }
-            50% { box-shadow: 0 4px 20px rgba(245,200,66,0.7); }
-        }
 
         /* ===== SIDEBAR ===== */
         .sidebar {
@@ -765,84 +733,6 @@
         }
         .saving-pulse { animation: pulse 0.5s ease; }
     </style>
-
-    <!-- ===== PWA INLINE ===== -->
-    <script id="manifest-injector">
-    (function(){
-      const manifest = {
-  "name": "المستقر المالي",
-  "short_name": "المستقر",
-  "description": "تطبيق إدارة الشؤون المالية الشخصية",
-  "start_url": ".",
-  "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#1a1f3a",
-  "theme_color": "#1a1f3a",
-  "lang": "ar",
-  "dir": "rtl",
-  "icons": [
-    {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%231a1f3a'/%3E%3Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='%23f5c842' font-family='Arial'%3E%F0%9F%92%B0%3C/text%3E%3C/svg%3E",
-      "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%231a1f3a'/%3E%3Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='%23f5c842' font-family='Arial'%3E%F0%9F%92%B0%3C/text%3E%3C/svg%3E",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
-  ],
-  "categories": ["finance","productivity"]
-};
-      const blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
-      const url  = URL.createObjectURL(blob);
-      const link = document.createElement('link');
-      link.rel   = 'manifest';
-      link.href  = url;
-      document.head.appendChild(link);
-    })();
-    </script>
-
-    <script id="sw-injector">
-    (function(){
-      if (!('serviceWorker' in navigator)) return;
-
-      // إنشاء service worker من blob
-      const swCode = "\nconst CACHE_NAME = 'mustaqar-v2';\nconst HTML_URL = location.href;\n\nself.addEventListener('install', e => {\n  e.waitUntil(\n    caches.open(CACHE_NAME).then(c => c.add(HTML_URL))\n  );\n  self.skipWaiting();\n});\n\nself.addEventListener('activate', e => {\n  e.waitUntil(\n    caches.keys().then(keys =>\n      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))\n    )\n  );\n  self.clients.claim();\n});\n\nself.addEventListener('fetch', e => {\n  e.respondWith(\n    caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match(HTML_URL)))\n  );\n});\n";
-      const swBlob = new Blob([swCode], {type:'application/javascript'});
-      const swUrl  = URL.createObjectURL(swBlob);
-
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register(swUrl)
-          .then(r => console.log('✅ SW registered'))
-          .catch(e => console.log('SW error:', e));
-      });
-
-      // زر التثبيت
-      let deferredPrompt;
-      window.addEventListener('beforeinstallprompt', e => {
-        e.preventDefault();
-        deferredPrompt = e;
-        const btn = document.getElementById('installBtn');
-        if (btn) {
-          btn.style.display = 'flex';
-          btn.onclick = () => {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then(c => {
-              if (c.outcome === 'accepted') btn.style.display = 'none';
-              deferredPrompt = null;
-            });
-          };
-        }
-      });
-      window.addEventListener('appinstalled', () => {
-        const btn = document.getElementById('installBtn');
-        if (btn) btn.style.display = 'none';
-      });
-    })();
-    </script>
 </head>
 <body>
 
@@ -1103,8 +993,10 @@
     <!-- الادخار السيادي -->
     <div id="tabSovereignSavings" class="page">
         <div class="card" style="text-align: center; background: var(--navy);">
-            <div class="section-label" style="justify-content:center; color: rgba(255,255,255,0.6); margin-bottom: 6px;">💰 إجمالي المبلغ المحتفظ به</div>
+            <div class="section-label" style="justify-content:center; color: rgba(255,255,255,0.6); margin-bottom: 6px;">💰 إجمالي المبلغ المدخل</div>
             <div id="sovereignTotalAmount" style="font-size: 28px; font-weight: 900; color: var(--gold);">0 دج</div>
+            <div class="section-label" style="justify-content:center; color: rgba(255,255,255,0.5); margin-bottom: 2px; font-size:12px;">🏦 حساب الادخار السيادي</div>
+            <div id="sovereignRetainedTotal" style="font-size: 20px; font-weight: 800; color: var(--teal);">0 دج</div>
         </div>
         <div class="card">
             <div class="card-header">
@@ -1114,12 +1006,12 @@
             <div class="card-subtitle">المتبقي بعد نسبة الاحتفاظ يذهب للادخار العادي</div>
             <input type="month" id="ssMonth" placeholder="الشهر">
             <input type="number" id="ssAmount" placeholder="المبلغ">
-            <input type="number" id="ssRetention" placeholder="نسبة الاحتفاظ (%)" min="0" max="100">
+            <input type="number" id="ssRetention" placeholder="مبلغ الاحتفاظ (الادخار السيادي)" min="0">
             <button class="btn btn-primary" onclick="addSovereignSaving()">➕ إضافة</button>
         </div>
         <table>
             <thead>
-                <tr><th>الشهر</th><th>المبلغ</th><th>نسبة الاحتفاظ</th><th>المحول للادخار</th><th>حذف</th></tr>
+                <tr><th>الشهر</th><th>المبلغ الأصلي</th><th>الادخار السيادي</th><th>المحول للادخار</th><th>حذف</th></tr>
             </thead>
             <tbody id="sovereignTable"></tbody>
         </table>
@@ -1772,9 +1664,10 @@
             const amount = parseFloat(document.getElementById('ssAmount').value);
             const retention = parseFloat(document.getElementById('ssRetention').value);
             if (!month || !amount || isNaN(retention)) return alert("املأ جميع الحقول");
-            const retainedAmount = amount * retention / 100;
+            // retainedAmount = مبلغ الاحتفاظ المدخل مباشرة (الادخار السيادي)
+            const retainedAmount = retention; // هنا retention = مبلغ وليس نسبة
             const transferredAmount = amount - retainedAmount;
-            db.sovereignSavings.push({ month, amount: retainedAmount, originalAmount: amount, retention, transferred: transferredAmount });
+            db.sovereignSavings.push({ month, amount: retainedAmount, originalAmount: amount, retention: retainedAmount, transferred: transferredAmount });
             if (transferredAmount > 0) {
                 db.savings.push({ place: `ادخار سيادي - ${month}`, amount: transferredAmount, consumed: 0 });
             }
@@ -1791,14 +1684,23 @@
         function renderSovereignSavings() {
             const tbody = document.getElementById('sovereignTable');
             tbody.innerHTML = '';
-            let totalSovereign = 0;
+            let totalOriginal    = 0;
+            let totalRetained    = 0;
+            let totalTransferred = 0;
             db.sovereignSavings.forEach((s, i) => {
-                totalSovereign += s.amount;
+                const orig        = s.originalAmount || s.amount;
+                const retained    = s.amount;
+                const transferred = s.transferred || 0;
+                totalOriginal    += orig;
+                totalRetained    += retained;
+                totalTransferred += transferred;
                 let tr = document.createElement('tr');
-                tr.innerHTML = `<td>${s.month}</td><td>${s.originalAmount || s.amount} دج</td><td>${s.retention}%</td><td style="color:var(--green)">${s.transferred || 0} دج</td><td><button class="btn-del" onclick="delSovereignSaving(${i})">🗑</button></td>`;
+                tr.innerHTML = `<td>${s.month}</td><td>${orig} دج</td><td style="color:var(--teal);font-weight:800">${retained} دج</td><td style="color:var(--green)">${transferred} دج</td><td><button class="btn-del" onclick="delSovereignSaving(${i})">🗑</button></td>`;
                 tbody.appendChild(tr);
             });
-            document.getElementById('sovereignTotalAmount').innerText = totalSovereign + ' دج';
+            document.getElementById('sovereignTotalAmount').innerText    = totalOriginal    + ' دج';
+            document.getElementById('sovereignRetainedTotal').innerText  = totalRetained    + ' دج';
+            // sovereignTransferredTotal محذوف
         }
 
         // ================ الطباعة ================
@@ -1811,8 +1713,7 @@
                 rowsHtml += `<tr><td>${op.date || '-'}</td><td>${op.amount} دج</td><td>${op.type}</td><td>${op.settled ? 'مسدد' : 'قيد الانتظار'}</td></tr>`;
             });
             const printWindow = window.open('', '_blank');
-            printWindow.document.write(`<html dir="rtl"><head><title>كشف حساب ${curStore}</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800&display=swap" rel="stylesheet"><style>body{font-family:'Cairo',sans-serif;padding:20px;}h1{text-align:center;color:#1a1f3a;}table{width:100%;border-collapse:collapse;margin-top:20px;}th{background:#1a1f3a;color:#f5c842;padding:10px;}td,th{border:1px solid #ddd;padding:8px;text-align:center;}</style></head><body><h1>كشف حساب: ${curStore}</h1><p style="text-align:center">الإجمالي: ${s.total} دج | المدفوع: ${s.paid} دج | المتبقي: ${s.total - s.paid} دج</p><table><thead><tr><th>التاريخ</th><th>المبلغ</th><th>النوع</th><th>الحالة</th></tr></thead><tbody>${rowsHtml}</tbody></table>
-</body></html>`);
+            printWindow.document.write(`<html dir="rtl"><head><title>كشف حساب ${curStore}</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800&display=swap" rel="stylesheet"><style>body{font-family:'Cairo',sans-serif;padding:20px;}h1{text-align:center;color:#1a1f3a;}table{width:100%;border-collapse:collapse;margin-top:20px;}th{background:#1a1f3a;color:#f5c842;padding:10px;}td,th{border:1px solid #ddd;padding:8px;text-align:center;}</style></head><body><h1>كشف حساب: ${curStore}</h1><p style="text-align:center">الإجمالي: ${s.total} دج | المدفوع: ${s.paid} دج | المتبقي: ${s.total - s.paid} دج</p><table><thead><tr><th>التاريخ</th><th>المبلغ</th><th>النوع</th><th>الحالة</th></tr></thead><tbody>${rowsHtml}</tbody></table></body></html>`);
             printWindow.document.close(); printWindow.print();
         };
 
