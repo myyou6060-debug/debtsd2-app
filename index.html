@@ -12,8 +12,181 @@
     <meta name="theme-color" content="#1a1f3a">
     <link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%231a1f3a'/%3E%3Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='%23f5c842' font-family='Arial'%3E💰%3C/text%3E%3C/svg%3E">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%231a1f3a'/%3E%3Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='%23f5c842' font-family='Arial'%3E💰%3C/text%3E%3C/svg%3E">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        /* خط النظام العربي المحلي — بدون إنترنت */
+        @font-face {
+            font-family: Tahoma, Arial, sans-serif;
+            src: local('Segoe UI'), local('Tahoma'), local('Arial');
+        }
+    </style>
+    <script>
+// ===== Chart.js Lite - محلي بالكامل =====
+class Chart {
+    constructor(ctx, config) {
+        this.ctx = ctx;
+        this.config = config;
+        this.canvas = ctx.canvas || ctx;
+        this._draw();
+    }
+    _draw() {
+        const c = this.canvas;
+        const ctx = c.getContext('2d');
+        const type = this.config.type;
+        const data = this.config.data;
+        const opts = this.config.options || {};
+        ctx.clearRect(0, 0, c.width, c.height);
+        if (type === 'doughnut' || type === 'pie') this._drawDoughnut(ctx, c, data, opts);
+        else if (type === 'bar') this._drawBar(ctx, c, data, opts);
+        else if (type === 'line') this._drawLine(ctx, c, data, opts);
+    }
+    _drawDoughnut(ctx, c, data, opts) {
+        const W = c.width, H = c.height;
+        const cx = W/2, cy = H/2;
+        const R = Math.min(W,H)*0.38;
+        const r = R * 0.55;
+        const labels = data.labels || [];
+        const ds = data.datasets[0];
+        const vals = ds.data || [];
+        const colors = ds.backgroundColor || ['#3b82f6','#f97316','#2ecc71','#e74c6f','#f5c842'];
+        const total = vals.reduce((a,b)=>a+b,0) || 1;
+        let angle = -Math.PI/2;
+        vals.forEach((v, i) => {
+            const slice = (v/total) * Math.PI * 2;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, R, angle, angle+slice);
+            ctx.closePath();
+            ctx.fillStyle = colors[i % colors.length];
+            ctx.fill();
+            angle += slice;
+        });
+        // ثقب الدونات
+        if (this.config.type === 'doughnut') {
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI*2);
+            ctx.fillStyle = '#1a1f3a';
+            ctx.fill();
+        }
+        // تسميات
+        ctx.font = 'bold 11px Tahoma,Arial';
+        ctx.textAlign = 'center';
+        angle = -Math.PI/2;
+        vals.forEach((v, i) => {
+            const slice = (v/total)*Math.PI*2;
+            if (v === 0) { angle+=slice; return; }
+            const mid = angle + slice/2;
+            const lx = cx + (R*0.75)*Math.cos(mid);
+            const ly = cy + (R*0.75)*Math.sin(mid);
+            ctx.fillStyle = '#fff';
+            ctx.fillText(Math.round(v/total*100)+'%', lx, ly);
+            angle += slice;
+        });
+        // وسط
+        if (opts.plugins && opts.plugins.centerText) {
+            ctx.fillStyle = '#f5c842';
+            ctx.font = 'bold 13px Tahoma,Arial';
+            ctx.fillText(opts.plugins.centerText, cx, cy+5);
+        }
+        // Legend
+        const legY = H - labels.length*18 - 4;
+        labels.forEach((lbl, i) => {
+            ctx.fillStyle = colors[i%colors.length];
+            ctx.fillRect(8, legY+i*18, 12, 12);
+            ctx.fillStyle = '#ccc';
+            ctx.font = '11px Tahoma,Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(lbl + ' (' + (vals[i]||0) + ')', 24, legY+i*18+10);
+        });
+    }
+    _drawBar(ctx, c, data, opts) {
+        const W = c.width, H = c.height;
+        const pad = {l:40,r:10,t:20,b:50};
+        const labels = data.labels || [];
+        const datasets = data.datasets || [];
+        const allVals = datasets.flatMap(d=>d.data||[]);
+        const maxV = Math.max(...allVals, 1);
+        const areaW = W - pad.l - pad.r;
+        const areaH = H - pad.t - pad.b;
+        const barW = areaW / (labels.length * (datasets.length+0.5));
+        // grid
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        ctx.lineWidth = 1;
+        for (let i=0;i<=4;i++) {
+            const y = pad.t + areaH*(1-i/4);
+            ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
+            ctx.fillStyle='rgba(255,255,255,0.4)';
+            ctx.font='10px Tahoma';
+            ctx.textAlign='right';
+            ctx.fillText(Math.round(maxV*i/4), pad.l-4, y+3);
+        }
+        // bars
+        labels.forEach((lbl, li) => {
+            datasets.forEach((ds, di) => {
+                const v = ds.data[li] || 0;
+                const bx = pad.l + li*(datasets.length+0.5)*barW + di*barW;
+                const bh = (v/maxV)*areaH;
+                const by = pad.t + areaH - bh;
+                ctx.fillStyle = Array.isArray(ds.backgroundColor) ? ds.backgroundColor[li]||ds.backgroundColor[0] : ds.backgroundColor||'#3b82f6';
+                ctx.fillRect(bx, by, barW*0.85, bh);
+            });
+            // label
+            ctx.fillStyle='rgba(255,255,255,0.6)';
+            ctx.font='10px Tahoma';
+            ctx.textAlign='center';
+            const cx2 = pad.l + li*(datasets.length+0.5)*barW + (datasets.length*barW)/2;
+            ctx.fillText(lbl, cx2, H-pad.b+14);
+        });
+    }
+    _drawLine(ctx, c, data, opts) {
+        const W = c.width, H = c.height;
+        const pad = {l:40,r:10,t:20,b:50};
+        const labels = data.labels || [];
+        const datasets = data.datasets || [];
+        const allVals = datasets.flatMap(d=>d.data||[]);
+        const maxV = Math.max(...allVals,1);
+        const areaW = W-pad.l-pad.r;
+        const areaH = H-pad.t-pad.b;
+        // grid
+        ctx.strokeStyle='rgba(255,255,255,0.1)'; ctx.lineWidth=1;
+        for(let i=0;i<=4;i++){
+            const y=pad.t+areaH*(1-i/4);
+            ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+            ctx.fillStyle='rgba(255,255,255,0.4)';ctx.font='10px Tahoma';ctx.textAlign='right';
+            ctx.fillText(Math.round(maxV*i/4),pad.l-4,y+3);
+        }
+        datasets.forEach(ds => {
+            const pts = ds.data||[];
+            const col = ds.borderColor||ds.backgroundColor||'#3b82f6';
+            ctx.strokeStyle=col; ctx.lineWidth=2;
+            ctx.beginPath();
+            pts.forEach((v,i)=>{
+                const x=pad.l+i*(areaW/(labels.length-1||1));
+                const y=pad.t+areaH-(v/maxV)*areaH;
+                i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+            });
+            ctx.stroke();
+            // نقاط
+            pts.forEach((v,i)=>{
+                const x=pad.l+i*(areaW/(labels.length-1||1));
+                const y=pad.t+areaH-(v/maxV)*areaH;
+                ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);
+                ctx.fillStyle=col;ctx.fill();
+            });
+        });
+        // labels
+        labels.forEach((lbl,i)=>{
+            const x=pad.l+i*(areaW/(labels.length-1||1));
+            ctx.fillStyle='rgba(255,255,255,0.6)';ctx.font='10px Tahoma';ctx.textAlign='center';
+            ctx.fillText(lbl,x,H-pad.b+14);
+        });
+    }
+    update() { this._draw(); }
+    destroy() {
+        const ctx = this.canvas.getContext('2d');
+        ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
+    }
+}
+</script>
     <style>
         * { box-sizing: border-box; user-select: none; }
 
@@ -46,7 +219,7 @@
         }
 
         body {
-            font-family: 'Cairo', sans-serif;
+            font-family: Tahoma, Arial, sans-serif;
             background: var(--bg);
             margin: 0; padding: 0;
             height: 100vh; overflow: hidden;
@@ -135,7 +308,7 @@
             border-radius: 20px;
             display: none;
             color: var(--gold);
-            font-family: 'Cairo';
+            font-family: Tahoma, Arial, sans-serif;
             font-weight: 700;
             transition: 0.2s;
         }
@@ -312,7 +485,7 @@
             margin-bottom: 10px;
             border: 1.5px solid var(--border);
             border-radius: 14px;
-            font-family: 'Cairo';
+            font-family: Tahoma, Arial, sans-serif;
             font-size: 14px;
             background: var(--bg);
             outline: none;
@@ -330,7 +503,7 @@
         .btn {
             border: none;
             border-radius: 14px;
-            font-family: 'Cairo';
+            font-family: Tahoma, Arial, sans-serif;
             font-weight: 800;
             cursor: pointer;
             padding: 12px 14px;
@@ -410,7 +583,7 @@
             padding: 5px 10px;
             font-weight: 800;
             cursor: pointer;
-            font-family: 'Cairo';
+            font-family: Tahoma, Arial, sans-serif;
             font-size: 12px;
         }
         .btn-del:active { transform: scale(0.95); }
@@ -644,7 +817,7 @@
         .payment-options { display: flex; gap: 10px; margin-top: 10px; }
         .payment-option-btn {
             flex: 1; padding: 10px; border: none;
-            border-radius: 14px; font-family: 'Cairo';
+            border-radius: 14px; font-family: Tahoma, Arial, sans-serif;
             font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 13px;
         }
         .payment-option-btn:active { transform: scale(0.95); }
@@ -680,7 +853,7 @@
             border-radius: 20px;
             padding: 7px 16px;
             font-weight: 800;
-            font-family: 'Cairo';
+            font-family: Tahoma, Arial, sans-serif;
             cursor: pointer;
         }
 
@@ -712,7 +885,7 @@
             .print-area {
                 position: absolute; left: 0; top: 0;
                 width: 100%; padding: 20px;
-                background: white; font-family: 'Cairo', sans-serif;
+                background: white; font-family: Tahoma, Arial, sans-serif;
             }
             .print-area table { width: 100%; border-collapse: collapse; margin-top: 20px; }
             .print-area th { background: #f2f5fe; padding: 10px; font-size: 14px; }
@@ -1073,23 +1246,76 @@
 
 <!-- سكريبت PWA -->
 <script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(() => {});
-    }
-    const swScript = `
-    self.addEventListener('install', e => {
-        e.waitUntil(caches.open('finance-app').then(cache => 
-            cache.addAll(['/', '/index.html', 'https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800&display=swap'])
-        ));
-    });
-    self.addEventListener('fetch', e => {
-        e.respondWith(caches.match(e.request).then(response => response || fetch(e.request)));
-    });`;
-    const blob = new Blob([swScript], { type: 'application/javascript' });
-    const url = URL.createObjectURL(blob);
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register(url).catch(() => {});
-    }
+    // ══════════════════════════════════════════════
+    //  Service Worker محسّن — يخزن الصفحة فوراً
+    // ══════════════════════════════════════════════
+    (function() {
+        if (!('serviceWorker' in navigator)) return;
+
+        const CACHE = 'mustaqar-v3';
+        const PAGE  = location.href;
+
+        const swCode = `
+const CACHE = '${CACHE}';
+const PAGE  = '${PAGE}';
+
+// تثبيت: خزّن الصفحة الكاملة فوراً
+self.addEventListener('install', e => {
+    e.waitUntil(
+        caches.open(CACHE).then(c => c.add(PAGE))
+    );
+    self.skipWaiting();
+});
+
+// تفعيل: احذف الكاش القديم
+self.addEventListener('activate', e => {
+    e.waitUntil(
+        caches.keys().then(keys =>
+            Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+        )
+    );
+    self.clients.claim();
+});
+
+// جلب: الكاش أولاً ثم الشبكة
+self.addEventListener('fetch', e => {
+    if (e.request.method !== 'GET') return;
+    e.respondWith(
+        caches.match(e.request).then(cached => {
+            if (cached) return cached;
+            return fetch(e.request)
+                .then(resp => {
+                    const clone = resp.clone();
+                    caches.open(CACHE).then(c => c.put(e.request, clone));
+                    return resp;
+                })
+                .catch(() => caches.match(PAGE));
+        })
+    );
+});`;
+
+        const blob = new Blob([swCode], { type: 'application/javascript' });
+        const swUrl = URL.createObjectURL(blob);
+
+        navigator.serviceWorker.register(swUrl)
+            .then(reg => {
+                console.log('✅ SW registered');
+                // تأكد من تفعيله فوراً
+                if (reg.installing) reg.installing.postMessage({ type: 'SKIP_WAITING' });
+            })
+            .catch(e => console.warn('SW error:', e));
+
+        // عند أول تحميل: خزّن الصفحة يدوياً كضمان إضافي
+        window.addEventListener('load', () => {
+            caches.open(CACHE).then(c => {
+                c.match(PAGE).then(cached => {
+                    if (!cached) {
+                        fetch(PAGE).then(r => c.put(PAGE, r)).catch(()=>{});
+                    }
+                });
+            });
+        });
+    })();
     
     let deferredPrompt;
     const installMessage = document.getElementById('installMessage');
@@ -1354,15 +1580,53 @@
             let grandTotal = 0;
             let tbody = document.getElementById('storesTableBody');
             tbody.innerHTML = '';
-            for (let name in db.stores) {
-                const s = db.stores[name];
+
+            // ترتيب تنازلي: الباقي الأكبر أولاً
+            const sorted = Object.entries(db.stores).sort((a, b) => {
+                const remA = a[1].total - a[1].paid;
+                const remB = b[1].total - b[1].paid;
+                return remB - remA;
+            });
+
+            sorted.forEach(([name, s]) => {
                 const remaining = s.total - s.paid;
                 grandTotal += remaining;
+                const isPaid   = remaining <= 0;
+                const isHigh   = remaining > 0 && remaining >= s.total * 0.7;
+                const isMid    = remaining > 0 && remaining >= s.total * 0.3 && remaining < s.total * 0.7;
+
+                // لون الصف حسب الباقي
+                let rowBg = '';
+                let remColor = 'var(--orange)';
+                if (isPaid) {
+                    rowBg    = 'rgba(231,76,111,0.13)';
+                    remColor = 'var(--rose)';
+                } else if (isHigh) {
+                    rowBg    = 'rgba(249,115,22,0.10)';
+                    remColor = 'var(--orange)';
+                } else if (isMid) {
+                    rowBg    = 'rgba(245,200,66,0.08)';
+                    remColor = 'var(--gold-dark)';
+                } else {
+                    rowBg    = 'rgba(46,204,113,0.08)';
+                    remColor = 'var(--green)';
+                }
+
                 let tr = document.createElement('tr');
-                if (remaining > s.total) tr.classList.add('over-limit-row');
-                tr.innerHTML = `<td style="cursor:pointer;color:var(--blue);font-weight:900;" onclick="openStore('${name}')">${name}</td><td>${s.total} دج</td><td style="color:var(--green)">${s.paid} دج</td><td style="color:var(--orange)">${remaining} دج</td><td><button class="btn-del" onclick="delStore('${name}')">🗑</button></td>`;
+                tr.style.background = rowBg;
+                tr.style.transition  = '0.2s';
+                tr.innerHTML = `
+                    <td style="cursor:pointer;color:var(--blue);font-weight:900;" onclick="openStore('${name}')">
+                        ${isPaid ? '✅' : ''} ${name}
+                    </td>
+                    <td>${s.total} دج</td>
+                    <td style="color:var(--green)">${s.paid} دج</td>
+                    <td style="color:${remColor};font-weight:${isPaid?'900':'700'}">
+                        ${isPaid ? '✔ مسدد' : remaining + ' دج'}
+                    </td>
+                    <td><button class="btn-del" onclick="delStore('${name}')">🗑</button></td>`;
                 tbody.appendChild(tr);
-            }
+            });
             document.getElementById('grandDebtOwed').innerText = grandTotal + ' دج';
         }
 
@@ -1394,13 +1658,30 @@
                 const totalSavingsRemaining = getTotalSavingsRemaining();
                 if (amt > totalSavingsRemaining) return alert("الادخار غير كافٍ!");
                 let leftToPay = amt;
+                const usedSavings = []; // تتبع من أين صُرف المبلغ
                 for (let sv of db.savings) {
                     if (leftToPay <= 0) break;
                     const svRemaining = sv.amount - (sv.consumed || 0);
+                    if (svRemaining <= 0) continue;
                     const take = Math.min(leftToPay, svRemaining);
                     sv.consumed = (sv.consumed || 0) + take;
+                    usedSavings.push({ place: sv.place, amount: take });
                     leftToPay -= take;
                 }
+                // احفظ تفاصيل الادخار المستهلك مع العملية
+                s.history = s.history || [];
+                const selectedIndices = [...selectedPurchaseIndices];
+                s.history.push({ type: 'دفع', amount: amt, date, source, linkedOps: selectedIndices, usedSavings });
+                s.paid += amt;
+                if (selectedIndices.length > 0) {
+                    selectedIndices.forEach(idx => { if (s.ops[idx]) s.ops[idx].settled = true; });
+                    selectedPurchaseIndices = [];
+                }
+                hidePaymentOptions();
+                saveToStorage(); renderStoresTable(); renderDebtOps(); renderDebtPaid();
+                document.getElementById('debtOAmt').value = '';
+                updateDebtStats(); updatePersonalStats();
+                return;
             } else {
                 const totalBorrowsRemaining = getTotalBorrowsRemaining();
                 if (amt > totalBorrowsRemaining) return alert("السلف غير كافية!");
@@ -1677,9 +1958,49 @@
             document.getElementById('ssRetention').value = '';
         };
         window.delSovereignSaving = function(idx) {
-            if (confirm('حذف هذا المدخر السيادي؟')) {
-                db.sovereignSavings.splice(idx, 1); saveToStorage(); renderSovereignSavings();
+            if (!confirm('حذف هذا المدخر السيادي؟\nسيتم حذف الادخار المرتبط وإرجاع الدفعات كدين.')) return;
+
+            const sov = db.sovereignSavings[idx];
+            const savLabel = `ادخار سيادي - ${sov.month}`;
+
+            // 1. احسب كم صُرف من هذا الادخار بالضبط
+            const savIdx = db.savings.findIndex(sv => sv.place === savLabel);
+            const consumedFromThis = savIdx !== -1 ? (db.savings[savIdx].consumed || 0) : 0;
+
+            // 2. إرجاع الدفعات من كل التجار
+            if (consumedFromThis > 0) {
+                let leftToReverse = consumedFromThis;
+                for (let storeName in db.stores) {
+                    if (leftToReverse <= 0) break;
+                    const store = db.stores[storeName];
+                    store.history = store.history || [];
+                    // ابحث في history عن دفعات استخدمت هذا الادخار
+                    for (let h of store.history) {
+                        if (leftToReverse <= 0) break;
+                        if (h.source !== 'savings' || !h.usedSavings) continue;
+                        for (let u of h.usedSavings) {
+                            if (u.place !== savLabel) continue;
+                            // أعد هذا المبلغ كدين
+                            const reverseAmt = Math.min(u.amount, leftToReverse);
+                            store.paid = Math.max(0, store.paid - reverseAmt);
+                            leftToReverse -= reverseAmt;
+                            // سجّل ملاحظة على العملية
+                            h.note = (h.note || '') + ` | تم إلغاء ${reverseAmt} دج (حذف ادخار سيادي ${sov.month})`;
+                        }
+                    }
+                }
             }
+
+            // 3. حذف سجل الادخار العادي
+            if (savIdx !== -1) db.savings.splice(savIdx, 1);
+
+            // 4. حذف السجل السيادي
+            db.sovereignSavings.splice(idx, 1);
+
+            saveToStorage();
+            renderSovereignSavings();
+            renderSavings();
+            renderStoresTable();
         };
         function renderSovereignSavings() {
             const tbody = document.getElementById('sovereignTable');
@@ -1713,7 +2034,7 @@
                 rowsHtml += `<tr><td>${op.date || '-'}</td><td>${op.amount} دج</td><td>${op.type}</td><td>${op.settled ? 'مسدد' : 'قيد الانتظار'}</td></tr>`;
             });
             const printWindow = window.open('', '_blank');
-            printWindow.document.write(`<html dir="rtl"><head><title>كشف حساب ${curStore}</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800&display=swap" rel="stylesheet"><style>body{font-family:'Cairo',sans-serif;padding:20px;}h1{text-align:center;color:#1a1f3a;}table{width:100%;border-collapse:collapse;margin-top:20px;}th{background:#1a1f3a;color:#f5c842;padding:10px;}td,th{border:1px solid #ddd;padding:8px;text-align:center;}</style></head><body><h1>كشف حساب: ${curStore}</h1><p style="text-align:center">الإجمالي: ${s.total} دج | المدفوع: ${s.paid} دج | المتبقي: ${s.total - s.paid} دج</p><table><thead><tr><th>التاريخ</th><th>المبلغ</th><th>النوع</th><th>الحالة</th></tr></thead><tbody>${rowsHtml}</tbody></table></body></html>`);
+            printWindow.document.write(`<html dir="rtl"><head><title>كشف حساب ${curStore}</title><style>body{font-family:Tahoma,Arial,sans-serif;padding:20px;}h1{text-align:center;color:#1a1f3a;}table{width:100%;border-collapse:collapse;margin-top:20px;}th{background:#1a1f3a;color:#f5c842;padding:10px;}td,th{border:1px solid #ddd;padding:8px;text-align:center;}</style></head><body><h1>كشف حساب: ${curStore}</h1><p style="text-align:center">الإجمالي: ${s.total} دج | المدفوع: ${s.paid} دج | المتبقي: ${s.total - s.paid} دج</p><table><thead><tr><th>التاريخ</th><th>المبلغ</th><th>النوع</th><th>الحالة</th></tr></thead><tbody>${rowsHtml}</tbody></table></body></html>`);
             printWindow.document.close(); printWindow.print();
         };
 
@@ -1730,7 +2051,7 @@
                 detailsHtml = '<tr><td colspan="3">لا توجد تفاصيل</td></tr>';
             }
             const printWindow = window.open('', '_blank');
-            printWindow.document.write(`<html dir="rtl"><head><title>تفاصيل المشتريات</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800&display=swap" rel="stylesheet"><style>body{font-family:'Cairo',sans-serif;padding:20px;}h1{text-align:center;color:#1a1f3a;}.info{text-align:center;margin-bottom:20px;}table{width:100%;border-collapse:collapse;margin-top:20px;}th{background:#f97316;color:white;padding:10px;}td,th{border:1px solid #ddd;padding:8px;text-align:center;}</style></head><body><h1>تفاصيل المشتريات</h1><div class="info"><p><strong>التاجر:</strong> ${storeName}</p><p><strong>التاريخ:</strong> ${date}</p><p><strong>المبلغ الإجمالي:</strong> ${op.amount} دج</p></div><table><thead><tr><th>السلعة</th><th>الكمية</th><th>المبلغ</th></tr></thead><tbody>${detailsHtml}</tbody></table></body></html>`);
+            printWindow.document.write(`<html dir="rtl"><head><title>تفاصيل المشتريات</title><style>body{font-family:Tahoma,Arial,sans-serif;padding:20px;}h1{text-align:center;color:#1a1f3a;}.info{text-align:center;margin-bottom:20px;}table{width:100%;border-collapse:collapse;margin-top:20px;}th{background:#f97316;color:white;padding:10px;}td,th{border:1px solid #ddd;padding:8px;text-align:center;}</style></head><body><h1>تفاصيل المشتريات</h1><div class="info"><p><strong>التاجر:</strong> ${storeName}</p><p><strong>التاريخ:</strong> ${date}</p><p><strong>المبلغ الإجمالي:</strong> ${op.amount} دج</p></div><table><thead><tr><th>السلعة</th><th>الكمية</th><th>المبلغ</th></tr></thead><tbody>${detailsHtml}</tbody></table></body></html>`);
             printWindow.document.close(); printWindow.print();
         };
 
